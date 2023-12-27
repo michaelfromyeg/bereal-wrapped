@@ -1,30 +1,31 @@
 @font-face {
-    font-family: 'Inter-SemiBold';
-    src: url('/static/fonts/Inter-SemiBold.ttf') format('truetype');
+    font-family: "Inter-SemiBold";
+    src: url("/static/fonts/Inter-SemiBold.ttf") format("truetype");
     font-weight: 600;
     font-style: normal;
 }
 
 @font-face {
-    font-family: 'Inter-Regular';
-    src: url('/static/fonts/Inter-Regular.ttf') format('truetype');
+    font-family: "Inter-Regular";
+    src: url("/static/fonts/Inter-Regular.ttf") format("truetype");
     font-weight: 400;
     font-style: normal;
 }
 
 @font-face {
-    font-family: 'Inter-Bold';
-    src: url('/static/fonts/Inter-Bold.ttf') format('truetype');
+    font-family: "Inter-Bold";
+    src: url("/static/fonts/Inter-Bold.ttf") format("truetype");
     font-weight: 600;
     font-style: normal;
 }
 
 h1 {
-    font-family: 'Inter-SemiBold',"Helvetica Neue",Helvetica,Arial,sans-serif;
+    font-family: "Inter-SemiBold", "Helvetica Neue", Helvetica, Arial,
+        sans-serif;
 }
 
 body {
-    font-family: 'Inter-Regular',"Helvetica Neue",Helvetica,Arial,sans-serif;
+    font-family: "Inter-Regular", "Helvetica Neue", Helvetica, Arial, sans-serif;
     margin: 0; /* Remove default body margin */
     display: block;
     align-items: center;
@@ -37,8 +38,8 @@ input {
     border: 1px solid #ccc;
     border-radius: 4px;
     resize: vertical;
-  }
-  
+}
+
 input[type="file"]::file-selector-button {
     border-radius: 4px;
     padding: 0 16px;
@@ -49,7 +50,7 @@ input[type="file"]::file-selector-button {
     box-shadow: 0px 1px 0px rgba(0, 0, 0, 0.05);
     margin-right: 16px;
     transition: background-color 200ms;
-  }
+}
 
 button {
     background-color: #222;
@@ -58,7 +59,8 @@ button {
     box-sizing: border-box;
     color: #fff;
     cursor: pointer;
-    font-family: 'Inter-Regular',"Farfetch Basis","Helvetica Neue",Arial,sans-serif;
+    font-family: "Inter-Regular", "Farfetch Basis", "Helvetica Neue", Arial,
+        sans-serif;
     font-weight: 700;
     line-height: 1.5;
     margin: 0;
@@ -78,7 +80,7 @@ button {
 
 button:hover,
 button:focus {
-    opacity: .75;
+    opacity: 0.75;
 }
 
 .container {
@@ -88,7 +90,7 @@ button:focus {
     flex-direction: column;
 }
 
-.video-settings div{
+.video-settings div {
     margin: 5px auto;
 }
 
@@ -106,7 +108,7 @@ button:focus {
     .date-range {
         display: block;
     }
-  }
+}
 
 /* Top navigation bar styles */
 .navbar {
@@ -130,7 +132,7 @@ button:focus {
 }
 
 .active {
-    background-color: #4CAF50;
+    background-color: #4caf50;
     color: white;
 }
 
@@ -149,7 +151,7 @@ button:focus {
 
 .navbar-title-text {
     color: #f2f2f2;
-    font-family: 'Inter-Bold',"Helvetica Neue",Helvetica,Arial,sans-serif;
+    font-family: "Inter-Bold", "Helvetica Neue", Helvetica, Arial, sans-serif;
     font-size: 24px;
     padding: 14px 0px;
 }
@@ -170,25 +172,31 @@ button:focus {
 }
 
 @media screen and (max-width: 600px) {
-    .navbar-title img {padding-left: 30px;}
-    .navbar-links a {display: none;}
-    .navbar-links a.icon {
-      display: flex;
-      float: right;
+    .navbar-title img {
+        padding-left: 30px;
     }
-  }
+    .navbar-links a {
+        display: none;
+    }
+    .navbar-links a.icon {
+        display: flex;
+        float: right;
+    }
+}
 
 @media screen and (max-width: 600px) {
-    .navbar-links.responsive {position: relative;}
+    .navbar-links.responsive {
+        position: relative;
+    }
     .navbar-links.responsive .icon {
-      position: absolute;
-      right: 0;
-      top: 0;
+        position: absolute;
+        right: 0;
+        top: 0;
     }
     .navbar-links.responsive a {
-      float: none;
-      display: block;
-      text-align: left;
+        float: none;
+        display: block;
+        text-align: left;
     }
 }
 /* Video Element in preview.html */
@@ -201,7 +209,7 @@ button:focus {
 }
 
 @media screen and (max-width: 600px) {
-    .video-preview{
+    .video-preview {
         width: 300px;
         height: 400px;
         object-fit: cover;
@@ -209,18 +217,18 @@ button:focus {
 }
 
 .download-button {
-    background-color: #43abc9; 
+    background-color: #43abc9;
     margin-top: 15px;
 }
 
 /* The alert message box */
 .alert {
     padding: 20px;
-    background-color: #43abc9; 
+    background-color: #43abc9;
     color: white;
     margin-bottom: 15px;
 }
- 
+
 /* The close button */
 .closebtn {
     margin-left: 15px;
@@ -232,11 +240,11 @@ button:focus {
     cursor: pointer;
     transition: 0.3s;
 }
- 
+
 /* When moving the mouse over the close button */
 .closebtn:hover {
     color: black;
-} 
+}
 
 /* Footer styles */
 .footer {
@@ -257,6 +265,3 @@ button:focus {
 .footer-links a:hover {
     text-decoration: underline;
 }
-
-
-  

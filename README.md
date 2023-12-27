@@ -1,18 +1,15 @@
-<a name="readme-top"></a>
+# BeReal Wrapped
 
-![Welcome Screen](https://github.com/theOneAndOnlyOne/BeReel/blob/main/static/images/BeReal_Header.png)
+**NOTE:** This is a fork of [BeReel](https://github.com/theOneAndOnlyOne/BeReel); please go give the original creator a star!
 
-# BeReel:
+(Below is mostly quoted; deployment instructions and edits, TBD, are new.)
 
-Miss the Timelapse Recap feature from ReReal? Introducing BeReel. A Flask-based webtool that gives you a customized timelapse of your favourite BeReal memories. 
-
-![Video Settings](https://github.com/theOneAndOnlyOne/BeReel/blob/main/static/images/BeReel_Video_Settings.png)
-
+Miss the time-lapse recap feature from BeReal? Introducing BeReal Wrapped, a Flask-based website that gives you a customized time-lapse of your favorite BeReal memories.
 
 * Implements a BeReal API to fetch user memories in a usable format
 * Fetch Memories at a specified date range
-* Renders using many open source libraries and fully customizable (with many features to come
-* Create a timelapsed that syncs with the .WAV audio
+* Renders using many open source libraries and fully customizable with many features to come
+* Create a time lapsed that syncs with the .WAV audio
 
 ## Getting Started
 
@@ -20,47 +17,63 @@ Follow these instructions to get your project up and running.
 
 ### Prerequisites
 
-Make sure you have the following installed on your machine:
+Make sure you have the following installed on your machine.
 
-- [Python](https://www.python.org/downloads/) (Only compatible with versions <3.12)
-- [pip](https://pip.pypa.io/en/stable/installation/)
+* [Python](https://python.org/downloads/) 3.11
+* [pip](https://pip.pypa.io/en/stable/installation/)
 
-### Installing Dependencies
+If you are missing either (and are on macOS or Linux), run
+
+```plaintext
+brew install python@3.11
+```
+
+### Development Setup
+
+First, create a virtual environment.
+
+```plaintext
+python3.11 -m venv env
+
+source env/bin/activate
+```
 
 Run all required libraries and run the app:
+
 ```bash
-pip install -r requirements.txt --user
-python main.py
+pip install --upgrade pip
+pip install -r requirements/dev.txt
+
+mypy --install-types
+
+make run
 ```
-The Flask app will be available on [http://localhost:5000/](http://localhost:5000/). Multiple folders will be created to pull all image data from your memories
+
+The Flask app will be available on [http://localhost:5000](http://localhost:5000/). Multiple folders will be created to pull image data from your memories.
 
 ### Project Structure
 
-- main.py: Main flask app and drives webpage and API requests
-- combineImages.py: processes photos to be used for the slideshow
-- generateSlideshow.py: rendering timelapse video and audio
+* `main.py` the main flask app and drives webpage and API requests
+* `combine_images.py` processes photos to be used for the slideshow
+* `generate_slideshow.py` rendering time-lapse video and audio
 
 ### Current Developments
 
-- [ ] Add 'no sound' option
-- [ ] Display RealMoji
-- [ ] Toggle Date Label setting
-- [ ] Show render progress from terminal->webpage
+* [ ] Add 'no sound' option
+* [ ] Display RealMoji
+* [ ] Toggle date label setting
+* [ ] Show render progress on webpage
 
 ## Remarks
 
 This project wouldn't be here without the amazing work by [chemokita13](https://github.com/chemokita13/beReal-api). Please give him a star.
 
-This app is to be run <b>locally</b> as to comply with user security laws and privacy. Under no cases does this app store metadata elsewhere.
-The app utilizes this third-party API which may not be following terms set by BeReal, all videos and images produced from this app is to be considered personal use and should only use accounts owned by the user: 
-If the company has particular issues, please submit a request via links in my profile.
+This app is to be run **locally** as to comply with user security laws and privacy. Under no cases does this app store metadata elsewhere.
 
-## Privacy Policy
+The app utilizes a third-party API which may not follow the terms and conditions set by BeReal; all videos and images produced from this app are to be considered personal use and should only use accounts owned by the user.
 
-BeReel was developed as an open-source app and gathers information from an unofficial BeReal API from chemokita13. BeReel has no association and responsibility with the API's development and how it accesses user information. See this [link](https://github.com/chemokita13/beReal-api) for more information about this API Project. This app is to be run <b>locally</b> as to comply with user security laws and privacy. Under no cases does this app store metadata elsewhere and all related images to develop the timelapse can be found in local folders labelled /primary /secondary /combined /static. All videos and images produced from this app is to be considered personal use and should only use accounts owned by the user.
+If BeReal has particular issues with this project, do not hesitate to reach out to myself or the downstream fork's creator.
 
 ## License
 
-Distributed under the MIT License. See `LICENSE.txt` for more information.
-
-<p align="right">(<a href="#readme-top">back to top</a>)</p>
+Distributed under the MIT License. See `LICENSE` for more information.
