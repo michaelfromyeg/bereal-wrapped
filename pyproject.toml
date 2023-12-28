@@ -1,23 +1,3 @@
-[tool.poetry]
-name = "bereal-wrapped"
-description = "Generate BeReal timelampses"
-version = "1.0.0"
-authors = ["Michael DeMarco <michaelfromyeg@gmail.com>"]
-
-[tool.poetry.dependencies]
-python = "3.11"
-flask = "3.0.0"
-librosa = "0.10.1"
-moviepy = "1.0.3"
-numpy = "1.26.2"
-Pillow = "10.1.0"
-pydub = "0.25.1"
-requests = "2.31.0"
-tqdm = "4.66.1"
-
-[tool.poetry.scripts]
-bereal = "bereal.main:main"
-
 [tool.mypy]
 ignore_missing_imports = true
 
