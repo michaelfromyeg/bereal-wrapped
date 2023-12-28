@@ -24,6 +24,8 @@ from datetime import datetime
 from enum import StrEnum
 
 # Global constants
+BASE_URL = "https://berealapi.fly.dev"
+
 IMAGE_EXTENSIONS = [".png", ".jpg", ".jpeg", ".webp"]
 
 
@@ -34,6 +36,22 @@ class Mode(StrEnum):
 
     CLASSIC = "classic"
     MODERN = "modern"
+
+
+def str2mode(s: str | None) -> Mode:
+    """
+    Convert a string to a Mode object.
+    """
+    if s is None or s == "":
+        return Mode.CLASSIC
+
+    match s:
+        case "classic":
+            return Mode.CLASSIC
+        case "modern":
+            return Mode.MODERN
+        case _:
+            raise ValueError(f"Invalid mode: {s}")
 
 
 # File system paths, for use globally

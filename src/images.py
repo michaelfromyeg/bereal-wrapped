@@ -97,7 +97,7 @@ def create_images(
     primary_folder: str = PRIMARY_IMAGE_PATH,
     secondary_folder: str = SECONDARY_IMAGE_PATH,
     output_folder: str = COMBINED_IMAGE_PATH,
-):
+) -> None:
     """
     Put secondary images on top of primary images.
     """

@@ -102,7 +102,8 @@ def create_slideshow(
     if mode == Mode.CLASSIC:
         logger.info("Selected classic mode; clipping video to 30 seconds accordingly")
         final_clip = final_clip.fx(
-            vfx.accel_decel, new_duration=30  # pylint: disable=no-member
+            vfx.accel_decel,
+            new_duration=30,  # pylint: disable=no-member
         )
 
     # Optionally, add music
@@ -116,16 +117,14 @@ def create_slideshow(
             # silence = AudioSegment.silent(duration=silence_duration * 1000)  # Duration in milliseconds
             # music += silence  # Concatenate silence and audio
         else:
-            print("music is longer than final clip, clipping")
+            logger.info("Music is longer than final clip; clipping appropriately")
             music = music.subclip(0, final_clip.duration)
 
         music = music.audio_fadeout(3)  # pylint: disable=no-member
 
         final_clip = final_clip.set_audio(music)
 
-    final_clip.write_videofile(
-        output_file, codec="libx264", audio_codec="aac", threads=6, fps=24
-    )
+    final_clip.write_videofile(output_file, codec="libx264", audio_codec="aac", threads=6, fps=24)
 
 
 def convert_to_durations(timestamps: list[float]) -> list[float]:
