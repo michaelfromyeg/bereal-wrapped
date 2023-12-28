@@ -6,7 +6,8 @@ COPY . /app
 
 RUN pip install --no-cache-dir -r requirements/prod.txt
 
-EXPOSE 80
-EXPOSE 443
+ENV FLASK_APP=bereal.main
+
+EXPOSE 5000
 
 CMD ["python", "-m", "bereal.main"]
