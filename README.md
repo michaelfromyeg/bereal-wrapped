@@ -4,12 +4,10 @@
 
 (Below is mostly quoted; deployment instructions and edits, TBD, are new.)
 
-Miss the time-lapse recap feature from BeReal? Introducing BeReal Wrapped, a Flask-based website that gives you a customized time-lapse of your favorite BeReal memories.
+Miss the time-lapse recap feature from BeReal? Introducing BeReal Wrapped, a website (or CLI) interface to generate one.
 
-* Implements a BeReal API to fetch user memories in a usable format
-* Fetch Memories at a specified date range
-* Renders using many open source libraries and fully customizable with many features to come
-* Create a time lapsed that syncs with the .WAV audio
+* Fetch memories for a specific year
+* Create a time-lapse that syncs with a `.wav` audio
 
 ## Usage
 
@@ -28,8 +26,12 @@ TBD.
 Run the following command, after launching Docker.
 
 ```plaintext
-docker run -it --rm --name my-app-container my-python-app
+docker pull michaelfromyeg/bereal-wrapped
+
+docker run -it --rm --name bereal-wrapped michaelfromyeg/bereal-wrapped
 ```
+
+When it asks for a song path, you'll only be able to use `/app/content/song.wav`. I'm working on making it work with your local file system.
 
 ## Development
 
@@ -70,6 +72,12 @@ make run
 ```
 
 The Flask app will be available on [http://localhost:5000](http://localhost:5000/). Multiple folders will be created to pull image data from your memories.
+
+### Docker Setup
+
+First, run `docker build -t bereal-wrapped .`.
+
+Then, run it locally with `docker run -it --rm --name bereal-wrapped bereal-wrapped`.
 
 ### Project Structure
 
