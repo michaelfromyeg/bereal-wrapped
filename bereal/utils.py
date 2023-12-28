@@ -26,7 +26,9 @@ from enum import StrEnum
 # Global constants
 BASE_URL = "https://berealapi.fly.dev"
 
-IMAGE_EXTENSIONS = [".png", ".jpg", ".jpeg", ".webp"]
+IMAGE_EXTENSIONS: list[str] = [".png", ".jpg", ".jpeg", ".webp"]
+
+YEARS: list[str] = ["2022", "2023"]
 
 
 class Mode(StrEnum):
@@ -58,7 +60,7 @@ def str2mode(s: str | None) -> Mode:
 # TODO(michaelfromyeg): make song, output variable; make folder paths depend on phone number
 CWD = os.getcwd()
 
-STATIC_PATH = os.path.join(CWD, "src", "static")
+STATIC_PATH = os.path.join(CWD, "bereal", "static")
 
 FONT_BASE_PATH = os.path.join(STATIC_PATH, "fonts")
 
@@ -76,7 +78,7 @@ CONTENT_PATH = os.path.join(CWD, "content")
 PRIMARY_IMAGE_PATH = os.path.join(CONTENT_PATH, "primary")
 SECONDARY_IMAGE_PATH = os.path.join(CONTENT_PATH, "secondary")
 COMBINED_IMAGE_PATH = os.path.join(CONTENT_PATH, "combined")
-SONG_PATH = os.path.join(CONTENT_PATH, "curr_song.wav")
+SONG_PATH = os.path.join(CONTENT_PATH, "song.wav")
 
 
 # Config variables
@@ -91,6 +93,18 @@ TIMEOUT = config.getint("bereal", "timeout")
 
 
 # Utility methods
+def year2dates(year_str: str) -> tuple[datetime, datetime]:
+    """
+    Convert a year string to two dates.
+    """
+    year = int(year_str)
+
+    start_date = datetime(year, 1, 1)
+    end_date = datetime(year, 12, 31)
+
+    return start_date, end_date
+
+
 def str2datetime(s: str) -> datetime:
     """
     Convert a string to a datetime object.

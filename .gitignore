@@ -4,8 +4,8 @@
 content/**/**
 !content/.gitkeep
 
-src/static/videos/**
-!src/static/videos/.gitkeep
+bereal/static/videos/**
+!bereal/static/videos/.gitkeep
 
 # TODO(michaelfromyeg): support many user? by phone number
 michael/
@@ -15,7 +15,7 @@ jack/
 combined/
 primary/
 secondary/
-curr_song.wav
+song.wav
 
 ### Python.gitignore
 

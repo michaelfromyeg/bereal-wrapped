@@ -1,5 +1,5 @@
 """
-This is the main file for the BeReal app.
+This is the entrypoint for the BeReal server.
 
 It contains the Flask app routing and the functions to interact with the BeReal API.
 """

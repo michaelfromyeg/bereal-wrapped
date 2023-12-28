@@ -2,6 +2,7 @@
 This script generates a slideshow from a folder of images and a music file.
 """
 import os
+from typing import Any, Generator
 
 import librosa
 from moviepy.editor import AudioFileClip, ImageSequenceClip, concatenate_videoclips, vfx
@@ -84,26 +85,30 @@ def create_slideshow(
         timestamps += timestamps[: len(image_paths) - len(timestamps)]
 
     # Create a clip for each image, with length determined by the timestamp
-    clips: list[ImageSequenceClip] = []
-    for image_path, timestamp in zip(image_paths, timestamps):
-        clip = ImageSequenceClip([image_path], fps=1 / timestamp)
-        clips.append(clip)
+    def generate_inner_clips() -> Generator[ImageSequenceClip, Any, None]:
+        for image_path, timestamp in zip(image_paths, timestamps):
+            logger.info("Yielding clip %s", image_path)
 
-        logger.debug("Appended clip %s", image_path)
+            clip = ImageSequenceClip([image_path], fps=1 / timestamp)
+            yield clip
 
     # Append the end card
     endcard_image_path = create_endcard(n_images=n_images)
     endcard_clip = ImageSequenceClip([endcard_image_path], fps=1 / 3)
-    clips.append(endcard_clip)
 
-    final_clip = concatenate_videoclips(clips, method="compose")
+    def generate_all_clips() -> Generator[ImageSequenceClip, Any, None]:
+        yield from generate_inner_clips()
+        yield endcard_clip
+
+    clips = list(generate_all_clips())
+    final_clip = concatenate_videoclips(clips=clips, method="compose")
 
     # Optionally, trim to 30 seconds ("classic BeReal")
     if mode == Mode.CLASSIC:
         logger.info("Selected classic mode; clipping video to 30 seconds accordingly")
         final_clip = final_clip.fx(
             vfx.accel_decel,
-            new_duration=30,  # pylint: disable=no-member
+            new_duration=30,
         )
 
     # Optionally, add music
@@ -120,7 +125,7 @@ def create_slideshow(
             logger.info("Music is longer than final clip; clipping appropriately")
             music = music.subclip(0, final_clip.duration)
 
-        music = music.audio_fadeout(3)  # pylint: disable=no-member
+        music = music.audio_fadeout(3)
 
         final_clip = final_clip.set_audio(music)
 

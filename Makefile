@@ -1,13 +1,17 @@
-.PHONY: run typecheck format
+.PHONY: server cli typecheck format
 
-run:
+server:
 	@echo "Booting up the server..."
-	@python -m src.main
+	@python -m bereal.server
+
+cli:
+	@echo "Booting up the CLI..."
+	@python -m bereal.cli
 
 typecheck:
 	@echo "Typechecking the code..."
-	@mypy src
+	@mypy bereal
 
 format:
 	@echo "Formatting the code..."
-	@ruff src
+	@ruff bereal

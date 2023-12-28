@@ -11,7 +11,27 @@ Miss the time-lapse recap feature from BeReal? Introducing BeReal Wrapped, a Fla
 * Renders using many open source libraries and fully customizable with many features to come
 * Create a time lapsed that syncs with the .WAV audio
 
-## Getting Started
+## Usage
+
+Ways to use this project.
+
+### Web
+
+TBD.
+
+### CLI
+
+TBD.
+
+### Docker (CLI)
+
+Run the following command, after launching Docker.
+
+```plaintext
+docker run -it --rm --name my-app-container my-python-app
+```
+
+## Development
 
 Follow these instructions to get your project up and running.
 
@@ -63,6 +83,8 @@ The Flask app will be available on [http://localhost:5000](http://localhost:5000
 * [ ] Display RealMoji
 * [ ] Toggle date label setting
 * [ ] Show render progress on webpage
+* [ ] Batching algorithm for videos
+* [ ] Better phone number support (start with CLI)
 
 ## Remarks
 
