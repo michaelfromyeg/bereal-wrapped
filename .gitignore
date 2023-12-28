@@ -1,11 +1,15 @@
 ### Custom
 
-# New data directory
+# New data directories
 content/**/**
 !content/.gitkeep
 
 src/static/videos/**
 !src/static/videos/.gitkeep
+
+# TODO(michaelfromyeg): support many user? by phone number
+michael/
+jack/
 
 # Data directories the original project
 combined/

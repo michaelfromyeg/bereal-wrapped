@@ -26,11 +26,11 @@ h1 {
 
 body {
     font-family: "Inter-Regular", "Helvetica Neue", Helvetica, Arial, sans-serif;
-    margin: 0; /* Remove default body margin */
+    margin: 0;
     display: block;
     align-items: center;
     justify-content: center;
-    height: 100vh; /* Make the body take the full height of the viewport */
+    height: 100vh;
 }
 
 input {
@@ -110,7 +110,6 @@ button:focus {
     }
 }
 
-/* Top navigation bar styles */
 .navbar {
     background-color: #333;
     overflow: hidden;
@@ -136,15 +135,13 @@ button:focus {
     color: white;
 }
 
-/* Title text style */
-
 .navbar-title {
     display: flex;
-    align-items: center; /* Center vertically */
+    align-items: center;
 }
 
 .navbar-title img {
-    margin-right: 8px; /* Add some spacing between the logo and text */
+    margin-right: 8px;
     padding-left: 60px;
     filter: invert(1);
 }
@@ -157,13 +154,12 @@ button:focus {
 }
 
 .navbar-title img {
-    margin-right: 8px; /* Add some spacing between the logo and text */
+    margin-right: 8px;
 }
 
-/* Navigation links container style */
 .navbar-links {
     display: flex;
-    align-items: center; /* Center vertically */
+    align-items: center;
     padding-right: 60px;
 }
 
@@ -199,7 +195,6 @@ button:focus {
         text-align: left;
     }
 }
-/* Video Element in preview.html */
 
 .video-preview {
     display: block;
@@ -221,7 +216,6 @@ button:focus {
     margin-top: 15px;
 }
 
-/* The alert message box */
 .alert {
     padding: 20px;
     background-color: #43abc9;
@@ -229,7 +223,6 @@ button:focus {
     margin-bottom: 15px;
 }
 
-/* The close button */
 .closebtn {
     margin-left: 15px;
     color: white;
@@ -241,12 +234,10 @@ button:focus {
     transition: 0.3s;
 }
 
-/* When moving the mouse over the close button */
 .closebtn:hover {
     color: black;
 }
 
-/* Footer styles */
 .footer {
     text-align: center;
     padding: 20px 0px;
@@ -254,6 +245,7 @@ button:focus {
     bottom: 0;
     width: 100%;
     position: fixed;
+    background-color: white;
 }
 
 .footer-links a {

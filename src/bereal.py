@@ -8,7 +8,7 @@ from typing import Any
 import requests as r
 
 from .logger import logger
-from .utils import PRIMARY_IMAGE_PATH, SECONDARY_IMAGE_PATH
+from .utils import PRIMARY_IMAGE_PATH, SECONDARY_IMAGE_PATH, str2datetime
 
 BASE_URL = "https://berealapi.fly.dev"
 
@@ -99,8 +99,8 @@ def get_memories(token_obj: str, start_date_range: str, end_date_range: str) -> 
     start_date_str = str(start_date_range)
     end_date_str = str(end_date_range)
 
-    start_date_object = datetime.strptime(start_date_str, "%Y-%m-%d")
-    end_date_object = datetime.strptime(end_date_str, "%Y-%m-%d")
+    start_date_object = str2datetime(start_date_str)
+    end_date_object = str2datetime(end_date_str)
 
     # iterate through the response and download images
     for item in data_array:

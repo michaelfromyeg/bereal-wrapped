@@ -1,17 +1,11 @@
 """
 A customer logger.
-
-TODO(michaelfromyeg): add an `.ini` for the logging config, later.
 """
 import logging
+import logging.config
 
-logger = logging.getLogger(__name__)
-logger.setLevel(logging.INFO)
+logging.config.fileConfig(fname="logger.ini", disable_existing_loggers=False)
 
-handler = logging.FileHandler("log.log")
-handler.setLevel(logging.DEBUG)
+logger = logging.getLogger("berealLogger")
 
-formatter = logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s")
-handler.setFormatter(formatter)
-
-logger.addHandler(handler)
+logger.debug("Hello, world!")

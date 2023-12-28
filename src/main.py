@@ -3,7 +3,6 @@ This is the main file for the BeReal app.
 
 It contains the Flask app routing and the functions to interact with the BeReal API.
 """
-import os
 
 from flask import Flask, render_template, request
 
@@ -80,12 +79,6 @@ def process():
     print("> downloading music file locally: ")
 
     try:
-        # Save the uploaded WAV file locally
-        upload_directory = os.getcwd()
-        print("saving file to ", upload_directory)
-        if not os.path.exists(upload_directory):
-            os.makedirs(upload_directory)
-
         wav_file.save(SONG_PATH)
     except Exception as e:
         print(f"Error in processing data: {str(e)}")
@@ -146,8 +139,8 @@ def failure() -> str:
 
 
 if __name__ == "__main__":
-    # app.run(debug=True)
+    app.run(debug=True)
 
     # debugging...
     # create_images()
-    build_slideshow("classic")
+    # build_slideshow("classic")
