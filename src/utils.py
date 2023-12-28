@@ -21,11 +21,24 @@ print(new_path)  # Outputs: /a/d/b/c
 import configparser
 import os
 from datetime import datetime
+from enum import StrEnum
 
-CWD = os.getcwd()
+# Global constants
+IMAGE_EXTENSIONS = [".png", ".jpg", ".jpeg", ".webp"]
+
+
+class Mode(StrEnum):
+    """
+    Supported video modes.
+    """
+
+    CLASSIC = "classic"
+    MODERN = "modern"
+
 
 # File system paths, for use globally
 # TODO(michaelfromyeg): make song, output variable; make folder paths depend on phone number
+CWD = os.getcwd()
 
 STATIC_PATH = os.path.join(CWD, "src", "static")
 
@@ -34,8 +47,8 @@ FONT_BASE_PATH = os.path.join(STATIC_PATH, "fonts")
 IMAGES_PATH = os.path.join(STATIC_PATH, "images")
 VIDEOS_PATH = os.path.join(STATIC_PATH, "videos")
 
-INPUT_IMAGE_PATH = os.path.join(IMAGES_PATH, "endCard_template.jpg")
-OUTPUT_IMAGE_PATH = os.path.join(IMAGES_PATH, "endCard.jpg")
+ENDCARD_TEMPLATE_IMAGE_PATH = os.path.join(IMAGES_PATH, "endCard_template.jpg")
+ENDCARD_IMAGE_PATH = os.path.join(IMAGES_PATH, "endCard.jpg")
 OUTLINE_PATH = os.path.join(IMAGES_PATH, "secondary_image_outline.png")
 
 OUTPUT_SLIDESHOW_PATH = os.path.join(VIDEOS_PATH, "slideshow.mp4")

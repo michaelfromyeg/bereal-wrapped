@@ -7,9 +7,9 @@ It contains the Flask app routing and the functions to interact with the BeReal 
 from flask import Flask, render_template, request
 
 from .bereal import get_memories, send_code, verify_code
-from .combine_images import create_images
-from .generate_slideshow import build_slideshow
+from .images import create_images
 from .utils import SONG_PATH
+from .videos import build_slideshow
 
 app = Flask(__name__, template_folder="templates")
 

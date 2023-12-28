@@ -1,4 +1,5 @@
-black
-isort
 mypy
+ruff
+types-Pillow
+types-requests
 -r common.txt

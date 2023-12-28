@@ -1,18 +1,14 @@
 """
 Combine two images together, with the secondary image in the top-left corner of the primary image.
 """
+import multiprocessing
 import os
 from multiprocessing import Pool
 
 from PIL import Image, ImageChops, ImageDraw, ImageFont
 
-from .utils import (
-    COMBINED_IMAGE_PATH,
-    FONT_BASE_PATH,
-    OUTLINE_PATH,
-    PRIMARY_IMAGE_PATH,
-    SECONDARY_IMAGE_PATH,
-)
+from .logger import logger
+from .utils import COMBINED_IMAGE_PATH, FONT_BASE_PATH, OUTLINE_PATH, PRIMARY_IMAGE_PATH, SECONDARY_IMAGE_PATH
 
 
 def process_image(
@@ -30,12 +26,9 @@ def process_image(
 
     # Extract prefix from primary filename
     primary_prefix = primary_filename.split("_")[0]
-    date = primary_prefix
 
     # Check if there's a corresponding file in the secondary folder with the same prefix
-    secondary_files = [
-        file for file in os.listdir(secondary_folder) if file.startswith(primary_prefix)
-    ]
+    secondary_files = [file for file in os.listdir(secondary_folder) if file.startswith(primary_prefix)]
 
     if not secondary_files:
         return None
@@ -73,7 +66,7 @@ def process_image(
     font_path = os.path.join(FONT_BASE_PATH, "Inter-Bold.ttf")
     font = ImageFont.truetype(font_path, font_size)
 
-    text_bbox = draw.textbbox((0, 0), date, font=font)
+    text_bbox = draw.textbbox((0, 0), primary_prefix, font=font)
 
     # Calculate the position to center the text
     x = (width - text_bbox[2]) // 2
@@ -85,44 +78,40 @@ def process_image(
 
     # Draw a semi-transparent filled rectangle as the background
     draw.rectangle(
-        [(x - 30, y - 15), (x + rect_width + 10, y + rect_height + 10)],
+        ((x - 30, y - 15), (x + rect_width + 10, y + rect_height + 10)),
         fill=(0, 0, 0, text_opacity),
     )
 
     # Draw the text on the image
-    draw.text((x, y), date, font=font, fill="white")
+    draw.text((x, y), primary_prefix, font=font, fill="white")
     # Save the modified image
 
     # Save the result in the output folder
     output_path = os.path.join(output_folder, f"combined_{primary_filename}")
     primary_image.save(output_path)
 
-    print(f"Combined image saved at: {output_path}")
+    logger.debug("Combined image saved at %s", output_path)
 
 
-def overlay_images(primary_folder, secondary_folder, output_folder):
-    # Ensure output folder exists
-    if not os.path.exists(output_folder):
-        os.makedirs(output_folder)
+def create_images(
+    primary_folder: str = PRIMARY_IMAGE_PATH,
+    secondary_folder: str = SECONDARY_IMAGE_PATH,
+    output_folder: str = COMBINED_IMAGE_PATH,
+):
+    """
+    Put secondary images on top of primary images.
+    """
+    os.makedirs(output_folder, exist_ok=True)
 
     # Get a list of primary filenames
     primary_filenames = os.listdir(primary_folder)
 
     # Use multiprocessing to process images in parallel
-    with Pool() as pool:
+    with Pool(processes=multiprocessing.cpu_count() - 2) as pool:
         pool.starmap(
             process_image,
             [
-                (filename, primary_folder, secondary_folder, output_folder)
-                for filename in primary_filenames
+                (primary_filename, primary_folder, secondary_folder, output_folder)
+                for primary_filename in primary_filenames
             ],
         )
-
-
-def create_images():
-    """
-    Call overlay images.
-
-    TODO(michaelfromyeg): deprecate.
-    """
-    overlay_images(PRIMARY_IMAGE_PATH, SECONDARY_IMAGE_PATH, COMBINED_IMAGE_PATH)
