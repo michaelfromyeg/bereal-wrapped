@@ -10,13 +10,11 @@ from PIL import Image, ImageDraw, ImageFont
 
 from .logger import logger
 from .utils import (
-    COMBINED_IMAGE_PATH,
     ENDCARD_IMAGE_PATH,
     ENDCARD_TEMPLATE_IMAGE_PATH,
+    EXPORTS_PATH,
     FONT_BASE_PATH,
     IMAGE_EXTENSIONS,
-    OUTPUT_SLIDESHOW_PATH,
-    SONG_PATH,
     Mode,
 )
 
@@ -146,11 +144,11 @@ def convert_to_durations(timestamps: list[float]) -> list[float]:
     return durations
 
 
-def build_slideshow(mode: Mode = Mode.CLASSIC):
+def build_slideshow(image_folder: str, song_path: str, filename: str, mode: Mode = Mode.CLASSIC) -> None:
     """
     Create the actual slideshow.
     """
-    audio_file = librosa.load(SONG_PATH)
+    audio_file = librosa.load(song_path)
     y, sr = audio_file
     _, beat_frames = librosa.beat.beat_track(y=y, sr=sr)
     beat_times_raw = librosa.frames_to_time(beat_frames, sr=sr)
@@ -158,10 +156,17 @@ def build_slideshow(mode: Mode = Mode.CLASSIC):
     beat_times = convert_to_durations([float(value) for value in beat_times_raw])
     logger.debug("Beat times: %s", beat_times)
 
+    output_file = os.path.join(EXPORTS_PATH, filename)
+
+    if os.path.isfile(output_file):
+        logger.info("Skipping 'build_slideshow' stage; already created!")
+        return None
+
     create_slideshow(
-        input_folder=COMBINED_IMAGE_PATH,
-        output_file=OUTPUT_SLIDESHOW_PATH,
-        music_file=SONG_PATH,
+        input_folder=image_folder,
+        output_file=output_file,
+        music_file=song_path,
         timestamps=beat_times,
         mode=mode,
     )
+    return None

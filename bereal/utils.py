@@ -20,8 +20,20 @@ print(new_path)  # Outputs: /a/d/b/c
 """
 import configparser
 import os
+import subprocess
 from datetime import datetime
 from enum import StrEnum
+
+from dotenv import load_dotenv
+
+# Environment variables
+load_dotenv()
+
+SECRET_KEY = os.getenv("SECRET_KEY") or "SECRET_KEY"
+FLASK_ENV = os.getenv("FLASK_ENV") or "production"
+
+if SECRET_KEY == "SECRET_KEY":
+    raise ValueError("SECRET_KEY environment variable not set or non-unique")
 
 # Global constants
 BASE_URL = "https://berealapi.fly.dev"
@@ -65,23 +77,16 @@ STATIC_PATH = os.path.join(CWD, "bereal", "static")
 FONT_BASE_PATH = os.path.join(STATIC_PATH, "fonts")
 
 IMAGES_PATH = os.path.join(STATIC_PATH, "images")
-VIDEOS_PATH = os.path.join(STATIC_PATH, "videos")
 
 ENDCARD_TEMPLATE_IMAGE_PATH = os.path.join(IMAGES_PATH, "endCard_template.jpg")
 ENDCARD_IMAGE_PATH = os.path.join(IMAGES_PATH, "endCard.jpg")
 OUTLINE_PATH = os.path.join(IMAGES_PATH, "secondary_image_outline.png")
 
-OUTPUT_SLIDESHOW_PATH = os.path.join(VIDEOS_PATH, "slideshow.mp4")
-
 CONTENT_PATH = os.path.join(CWD, "content")
+EXPORTS_PATH = os.path.join(CWD, "exports")
 
 os.makedirs(CONTENT_PATH, exist_ok=True)
-
-PRIMARY_IMAGE_PATH = os.path.join(CONTENT_PATH, "primary")
-SECONDARY_IMAGE_PATH = os.path.join(CONTENT_PATH, "secondary")
-COMBINED_IMAGE_PATH = os.path.join(CONTENT_PATH, "combined")
-SONG_PATH = os.path.join(CONTENT_PATH, "song.wav")
-
+os.makedirs(EXPORTS_PATH, exist_ok=True)
 
 # Config variables
 config = configparser.ConfigParser()
@@ -95,6 +100,17 @@ TIMEOUT = config.getint("bereal", "timeout")
 
 
 # Utility methods
+def get_git_commit_hash() -> str:
+    try:
+        commit_hash = subprocess.check_output(["git", "rev-parse", "--short", "HEAD"]).strip()
+        return commit_hash.decode("utf-8")
+    except subprocess.CalledProcessError:
+        return "unknown"
+
+
+GIT_COMMIT_HASH = get_git_commit_hash()
+
+
 def year2dates(year_str: str) -> tuple[datetime, datetime]:
     """
     Convert a year string to two dates.

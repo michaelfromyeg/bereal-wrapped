@@ -12,7 +12,9 @@ const Footer: React.FC = () => {
   const [stage, setStage] = useState<Stage>("phoneInput");
   const [phoneNumber, setPhoneNumber] = useState<string>("");
   const [countryCode, setCountryCode] = useState<string>("");
-  const [otp, setOtp] = useState<string>("");
+  const [otpCode, setOtpCode] = useState<string>("");
+  const [otpSession, setOtpSession] = useState<any | null>(null);
+  const [token, setToken] = useState<string>("");
   const [year, setYear] = useState<string>("2022");
   const [file, setFile] = useState<File | null>(null);
   const [mode, setMode] = useState<string>("classic");
@@ -20,16 +22,26 @@ const Footer: React.FC = () => {
 
   const handlePhoneSubmit = async () => {
     try {
-      const response = await axios.post(`${BASE_URL}/request-otp`, {
-        phone: `${countryCode}${phoneNumber}`,
-      });
+      const session = localStorage.getItem("session");
+      if (session) {
+        const sessionData = JSON.parse(session);
+        setOtpSession(sessionData.otpSession);
+        setToken(sessionData.token);
 
-      // Handle response, e.g., display a message or store the session info
-      console.log(response.data);
-      setStage("otpInput");
+        setStage("settings");
+      } else {
+        const response = await axios.post(`${BASE_URL}/request-otp`, {
+          phone: `${countryCode}${phoneNumber}`,
+        });
+
+        console.log(response.data);
+
+        setOtpSession(response.data?.otpSession);
+
+        setStage("otpInput");
+      }
     } catch (error) {
       console.error("Error sending OTP:", error);
-      // Handle error, e.g., display an error message to the user
     }
   };
 
@@ -37,21 +49,32 @@ const Footer: React.FC = () => {
     try {
       const response = await axios.post(`${BASE_URL}/validate-otp`, {
         phone: `${countryCode}${phoneNumber}`,
-        otp,
+        otp_session: otpSession,
+        otp_code: otpCode,
       });
-      // Handle response, e.g., move to the next stage
+
       console.log(response.data);
+
+      setToken(response.data?.token);
+
+      const sessionData = {
+        otpSession,
+        token: response.data?.token,
+      };
+
+      localStorage.setItem("session", JSON.stringify(sessionData));
+
       setStage("settings");
     } catch (error) {
       console.error("Error validating OTP:", error);
-      // Handle error
     }
   };
 
   const handleSettingsSubmit = async () => {
-    // FormData to handle file upload
     const formData = new FormData();
     formData.append("phone", `${countryCode}${phoneNumber}`);
+    formData.append("token", token);
+
     formData.append("year", year);
     formData.append("mode", mode);
     if (file) {
@@ -64,12 +87,15 @@ const Footer: React.FC = () => {
           "Content-Type": "multipart/form-data",
         },
       });
-      // Assume response contains the video URL
-      setVideoUrl(response.data.videoUrl);
+
+      // setVideoUrl(response.data.videoUrl);
+      const videoUrl = `${BASE_URL}/video/${response.data?.videoUrl}`;
+      console.log({ videoUrl });
+
+      setVideoUrl(videoUrl);
       setStage("videoDisplay");
     } catch (error) {
       console.error("Error submitting settings:", error);
-      // Handle error
     }
   };
 
@@ -115,17 +141,17 @@ const Footer: React.FC = () => {
         {stage === "otpInput" && (
           <>
             <label
-              htmlFor="otp"
+              htmlFor="otpCode"
               className="block text-sm font-medium text-gray-700"
             >
               One-Time Password
             </label>
             <input
               type="text"
-              id="otp"
+              id="otpCode"
               placeholder="OTP"
-              value={otp}
-              onChange={(e) => setOtp(e.target.value)}
+              value={otpCode}
+              onChange={(e) => setOtpCode(e.target.value)}
             />
             <button onClick={handleOtpSubmit}>Validate OTP</button>
           </>
@@ -177,7 +203,12 @@ const Footer: React.FC = () => {
         )}
         {stage === "videoDisplay" && (
           <>
-            <video src={videoUrl} controls />
+            {/* TODO(michaelfromyeg): enable video previews */}
+            {/* <video controls>
+              <source src={videoUrl} type="video/mp4" />{" "}
+              Your browser does not support the video tag. The download button
+              should work though!
+            </video> */}
             <button onClick={() => (window.location.href = videoUrl)}>
               Download Video
             </button>

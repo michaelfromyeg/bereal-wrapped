@@ -5,6 +5,7 @@
 content/
 client/
 env/
+exports/
 
 .editorconfig
 .gitignore

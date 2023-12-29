@@ -1,15 +1,13 @@
 ### Custom
 
 # New data directories
+exports/
+
 content/**/**
 !content/.gitkeep
 
 bereal/static/videos/**
 !bereal/static/videos/.gitkeep
-
-# TODO(michaelfromyeg): support many user? by phone number
-michael/
-jack/
 
 # Data directories the original project
 combined/

@@ -4,137 +4,140 @@ This is the entrypoint for the BeReal server.
 It contains the Flask app routing and the functions to interact with the BeReal API.
 """
 import os
+from typing import Any
 
-from flask import Flask, render_template, request
+from flask import Flask, Response, abort, jsonify, request, send_from_directory
+from flask_cors import CORS
+from itsdangerous import SignatureExpired, URLSafeTimedSerializer
 
 from .bereal import memories, send_code, verify_code
-from .images import create_images
+from .images import cleanup_images, create_images
 from .logger import logger
-from .utils import HOST, PORT, SONG_PATH, str2datetime, str2mode
+from .utils import CONTENT_PATH, EXPORTS_PATH, FLASK_ENV, GIT_COMMIT_HASH, HOST, PORT, SECRET_KEY, str2mode, year2dates
 from .videos import build_slideshow
 
-app = Flask(__name__, template_folder="templates")
+app = Flask(__name__)
+serializer = URLSafeTimedSerializer(SECRET_KEY)
+
+if FLASK_ENV == "development":
+    CORS(app)
+else:
+    CORS(app, resources={r"/*": {"origins": "https://michaeldemar.co"}})
+
+# TODO(michaelfromyeg): make this a database
+PHONE_TO_TOKEN: dict[str, str] = {}
 
 
-@app.route("/", methods=["GET", "POST"])
-def index() -> str:
+@app.route("/status")
+def status() -> Response:
     """
-    Get the home page.
-
-    TODO(michaelfromyeg): separate out "true" POST requests from render calls.
+    Return the status of the server.
     """
-    if request.method == "GET":
-        return render_template("index.html")
+    return jsonify({"status": "ok", "version": GIT_COMMIT_HASH})
 
-    country_code = request.form["country_code"]
-    phone_number = request.form["phone_number"]
 
-    otp_session = send_code(f"+{country_code}{phone_number}")
+@app.route("/request-otp", methods=["POST"])
+def request_otp() -> tuple[Response, int]:
+    """
+    Request an OTP code for a user.
+    """
+    data: dict[str, Any] = request.get_json()
+    phone = data["phone"]
+
+    otp_session = send_code(f"+{phone}")
 
     if otp_session is None:
-        return render_template(
-            "index.html",
-            message="Invalid phone number. Check formatting and Please try again.",
-        )
+        return jsonify({"error": "Invalid phone number"}), 400
 
-    return render_template("verify.html", otp_session=otp_session)
+    return jsonify({"otpSession": otp_session}), 200
 
 
-@app.route("/verify", methods=["GET", "POST"])
-def verify() -> str:
+@app.route("/validate-otp", methods=["POST"])
+def validate_otp() -> tuple[Response, int]:
     """
-    Verify the user's input and render the process page.
+    Validate the user's input and render the process page.
     """
-    if request.method == "GET":
-        return render_template("verify.html")
+    data: dict[str, Any] = request.get_json()
+    phone = data["phone"]
+    otp_session = data["otp_session"]
 
-    user_code = request.form["verification_code"]
-    otp_session = request.form["otp_session"]
+    otp_code = data["otp_code"]
 
-    token = verify_code(otp_session, user_code)
+    token = verify_code(otp_session, otp_code)
 
     if token is None:
-        return render_template("failure.html")
+        return jsonify({"error": "Invalid verification code"}), 400
 
-    return render_template("process.html", token=token)
+    PHONE_TO_TOKEN[phone] = token
+
+    return jsonify({"token": token}), 200
 
 
-@app.route("/process", methods=["GET", "POST"])
-def process() -> str:
+@app.route("/video", methods=["POST"])
+def create_video() -> tuple[Response, int]:
     """
     Process a user's input and render the preview page.
     """
-    if request.method == "GET":
-        return render_template("process.html")
-
-    sdate = str2datetime(request.form["start_date_range"])
-    edate = str2datetime(request.form["end_date_range"])
-    wav_file = request.files["wav_file"]
+    phone = request.form["phone"]
     token = request.form["token"]
+    short_token = token[:10]
+
+    if phone not in PHONE_TO_TOKEN or PHONE_TO_TOKEN[phone] != token:
+        return jsonify({"error": "Invalid token"}), 400
+
+    year = request.form["year"]
+    sdate, edate = year2dates(year)
+
+    wav_file = request.files["file"]
 
     mode_str = request.form.get("mode")
     mode = str2mode(mode_str)
 
-    logger.debug("Downloading music file...")
+    logger.debug("Downloading music file %s...", wav_file.filename)
+
+    song_folder = os.path.join(CONTENT_PATH, phone, year)
+    os.makedirs(song_folder, exist_ok=True)
+    song_path = os.path.join(song_folder, "song.wav")
 
     try:
-        wav_file.save(SONG_PATH)
+        wav_file.save(song_path)
     except Exception as error:
         logger.warning("Could not save music file, received: %s", error)
 
     logger.debug("Downloading images locally...")
-    result = memories(token, sdate, edate)
+    result = memories(phone, year, token, sdate, edate)
 
     if not result:
-        return render_template("failure.html")
+        return jsonify({"error": "Could not generate images; try again later"}), 500
 
-    # process images and apply effects
-    create_images()
+    video_file = f"{short_token}-{phone}-{year}.mp4"
 
-    # assemble files and load audio
-    build_slideshow(mode)
+    image_folder = create_images(phone, year)
+    build_slideshow(image_folder, song_path, video_file, mode)
+    cleanup_images(phone, year)
 
-    return render_template("preview.html")
+    return jsonify({"videoUrl": video_file}), 200
 
 
-@app.route("/about")
-def about() -> str:
+@app.route("/video/<filename>", methods=["GET"])
+def get_video(filename: str) -> tuple[Response, int]:
     """
-    Render the about page.
+    Serve a video file.
     """
-    return render_template("about.html")
+    try:
+        return send_from_directory(EXPORTS_PATH, filename, mimetype="video/mp4"), 200
+    except SignatureExpired:
+        # TODO(michaelfromyeg): implement this
+        abort(403)
 
 
-@app.route("/privacy")
-def privacy() -> str:
-    """
-    Render the privacy warning page.
-    """
-    return render_template("privacy.html")
+@app.errorhandler(500)
+def internal_error(error) -> Response:
+    logger.error("Got 500 error: %s", error)
 
-
-@app.route("/contact")
-def contact() -> str:
-    """
-    Render the contact page.
-    """
-    return render_template("contact.html")
-
-
-@app.route("/preview")
-def preview() -> str:
-    """
-    Render the video preview page.
-    """
-    return render_template("preview.html")
-
-
-@app.route("/failure")
-def failure() -> str:
-    """
-    Render the failure page.
-    """
-    return render_template("failure.html")
+    response = jsonify({"error": "Internal Server Error", "message": "An internal server error occurred"})
+    response.status_code = 500
+    return response
 
 
 if __name__ == "__main__":

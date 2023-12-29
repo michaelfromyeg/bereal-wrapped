@@ -8,7 +8,7 @@ from typing import Any
 import requests as r
 
 from .logger import logger
-from .utils import BASE_URL, PRIMARY_IMAGE_PATH, SECONDARY_IMAGE_PATH, TIMEOUT, str2datetime
+from .utils import BASE_URL, CONTENT_PATH, TIMEOUT, str2datetime
 
 
 def send_code(phone: str) -> Any | None:
@@ -62,7 +62,7 @@ def verify_code(otp_session: Any, otp_code: str) -> str | None:
             return None
 
 
-def memories(token: str, sdate: datetime, edate: datetime) -> bool:
+def memories(phone: str, year: str, token: str, sdate: datetime, edate: datetime) -> bool:
     """
     Fetch user 'memories' (i.e., the images).
 
@@ -70,8 +70,15 @@ def memories(token: str, sdate: datetime, edate: datetime) -> bool:
     """
     headers = {"token": token}
 
-    os.makedirs(PRIMARY_IMAGE_PATH, exist_ok=True)
-    os.makedirs(SECONDARY_IMAGE_PATH, exist_ok=True)
+    primary_path = os.path.join(CONTENT_PATH, phone, year, "primary")
+    secondary_path = os.path.join(CONTENT_PATH, phone, year, "secondary")
+
+    if os.path.isdir(primary_path) and os.path.isdir(secondary_path):
+        logger.info("Skipping 'memories' stage; already downloaded!")
+        return True
+
+    os.makedirs(primary_path, exist_ok=True)
+    os.makedirs(secondary_path, exist_ok=True)
 
     response = r.get(f"{BASE_URL}/friends/mem-feed", headers=headers, timeout=TIMEOUT)
     data_array: list[Any] = []
@@ -118,9 +125,9 @@ def memories(token: str, sdate: datetime, edate: datetime) -> bool:
         date_str = item.get("memoryDay", "")
 
         primary_image_url = item["primary"].get("url", "")
-        download_image(date_str, primary_image_url, PRIMARY_IMAGE_PATH)
+        download_image(date_str, primary_image_url, primary_path)
 
         secondary_image_url = item["secondary"].get("url", "")
-        download_image(date_str, secondary_image_url, SECONDARY_IMAGE_PATH)
+        download_image(date_str, secondary_image_url, secondary_path)
 
     return True

@@ -8,7 +8,7 @@ from multiprocessing import Pool
 from PIL import Image, ImageChops, ImageDraw, ImageFont
 
 from .logger import logger
-from .utils import COMBINED_IMAGE_PATH, FONT_BASE_PATH, OUTLINE_PATH, PRIMARY_IMAGE_PATH, SECONDARY_IMAGE_PATH
+from .utils import CONTENT_PATH, FONT_BASE_PATH, OUTLINE_PATH
 
 
 def process_image(
@@ -94,14 +94,24 @@ def process_image(
 
 
 def create_images(
-    primary_folder: str = PRIMARY_IMAGE_PATH,
-    secondary_folder: str = SECONDARY_IMAGE_PATH,
-    output_folder: str = COMBINED_IMAGE_PATH,
-) -> None:
+    phone: str,
+    year: str,
+) -> str:
     """
     Put secondary images on top of primary images.
     """
+    primary_folder = os.path.join(CONTENT_PATH, phone, year, "primary")
+    secondary_folder = os.path.join(CONTENT_PATH, phone, year, "secondary")
+    output_folder = os.path.join(CONTENT_PATH, phone, year, "combined")
+
+    os.makedirs(primary_folder, exist_ok=True)
+    os.makedirs(secondary_folder, exist_ok=True)
+
     os.makedirs(output_folder, exist_ok=True)
+
+    if os.path.isdir(output_folder):
+        logger.info("Skipping 'create_images' stage; already created!")
+        return output_folder
 
     # Get a list of primary filenames
     primary_filenames = os.listdir(primary_folder)
@@ -116,3 +126,21 @@ def create_images(
                 for primary_filename in primary_filenames
             ],
         )
+
+    return output_folder
+
+
+def cleanup_images(phone: str, year: str) -> None:
+    """
+    Delete all the images in the primary and secondary folders.
+    """
+    primary_path = os.path.join(CONTENT_PATH, phone, year, "primary")
+    secondary_path = os.path.join(CONTENT_PATH, phone, year, "secondary")
+    output_folder = os.path.join(CONTENT_PATH, phone, year, "combined")
+
+    os.makedirs(primary_path, exist_ok=True)
+    os.makedirs(secondary_path, exist_ok=True)
+
+    for folder in [primary_path, secondary_path, output_folder]:
+        for file in os.listdir(folder):
+            os.remove(os.path.join(folder, file))

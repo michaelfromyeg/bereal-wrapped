@@ -124,6 +124,7 @@ docker push michaelfromyeg/bereal-wrapped-cli
 
 ### Current Developments
 
+* [ ] Add a SQLite database; expire videos after 24-hours
 * [ ] Make files, paths specific to user (i.e., a phone number)
 * [ ] Clean-up steps
 * [ ] Add 'no sound' option
