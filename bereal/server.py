@@ -4,6 +4,7 @@ This is the entrypoint for the BeReal server.
 It contains the Flask app routing and the functions to interact with the BeReal API.
 """
 import os
+import warnings
 from datetime import datetime, timedelta
 from typing import Any
 
@@ -29,6 +30,8 @@ from .utils import (
     year2dates,
 )
 from .videos import build_slideshow
+
+warnings.filterwarnings("ignore", category=UserWarning, module="tzlocal")
 
 app = Flask(__name__)
 serializer = URLSafeTimedSerializer(SECRET_KEY)
@@ -168,6 +171,11 @@ def get_video(filename: str) -> tuple[Response, int]:
     except SignatureExpired:
         # TODO(michaelfromyeg): implement this
         abort(403)
+
+
+@app.route("/favicon.ico")
+def favicon():
+    return send_from_directory(app.static_folder, "favicon.ico", mimetype="image/vnd.microsoft.icon")
 
 
 @app.errorhandler(400)
