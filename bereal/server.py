@@ -122,18 +122,17 @@ def create_video() -> tuple[Response, int]:
     year = request.form["year"]
     sdate, edate = year2dates(year)
 
-    wav_file = request.files["file"]
+    wav_file = request.files.get("file", None)
 
     mode_str = request.form.get("mode")
     mode = str2mode(mode_str)
-
-    logger.debug("Downloading music file %s...", wav_file.filename)
 
     song_folder = os.path.join(CONTENT_PATH, phone, year)
     os.makedirs(song_folder, exist_ok=True)
     song_path = os.path.join(song_folder, "song.wav")
 
     if wav_file:
+        logger.debug("Downloading music file %s...", wav_file.filename)
         try:
             wav_file.save(song_path)
         except Exception as error:
