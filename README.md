@@ -23,7 +23,7 @@ Clone and set up the repository. (Instructions are below.)
 
 Then run `make cli` from the root.
 
-Eventually, this may be repackaged into a `pip`` install.
+Eventually, this may be repackaged into a `pip` install.
 
 ### Docker (CLI)
 

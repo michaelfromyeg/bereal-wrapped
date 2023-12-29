@@ -4,7 +4,8 @@ A command-line interface for the BeReal generator.
 import argparse
 import os
 import shutil
-from typing import Any
+from time import sleep
+from typing import Any, Callable
 
 from .bereal import memories, send_code, verify_code
 from .images import create_images
@@ -15,41 +16,86 @@ from .videos import build_slideshow
 STEPS = 5
 
 
+def ask(question: str, validate: Callable[[str], bool], error: str, retries: int = 10) -> str:
+    """
+    Ask a question and validate the input. Return the response.
+    """
+    retry = 0
+    while retry < retries:
+        answer = input(question)
+        if validate(answer):
+            break
+
+        print(error)
+        retry += 1
+
+    return answer
+
+
+def retry_api(
+    info: str,
+    api: Callable[..., Any],
+    args: dict[str, Any],
+    error: str,
+    n_sleep: int = 10,
+    retries: int = 3,
+) -> Any | None:
+    """
+    An API retrier-helper.
+    """
+    retry = 0
+    retval = None
+
+    while retry < retries:
+        print(info)
+        retval = api(**args)
+
+        if retval is not None:
+            break
+
+        print(error)
+        retry += 1
+
+        print(f"Retrying in {n_sleep} seconds...")
+        sleep(n_sleep)
+
+    return retval  # may still be none!
+
+
 def validate() -> tuple[str, str] | None:
     """
     Authenticate the user.
     """
     print("Your phone number is required for BeReal authentication.")
 
-    while True:
-        country_code = input("First, enter your country code (e.g., X or XX): ")
-        if len(country_code) in [1, 2]:
-            break
+    country_code = ask(
+        "First, enter your country code (e.g., X or XX): ", lambda x: len(x) in [1, 2], "Invalid country code!"
+    )
+    phone = ask("Enter your phone number (e.g., XXXXXXXXXX): ", lambda x: len(x) == 10, "Invalid phone number!")
 
-        print("Invalid country code!")
-
-    while True:
-        phone = input("Enter your phone number (e.g., XXXXXXXXXX): ")
-        if len(phone) == 10:
-            break
-
-        print("Invalid phone number!")
-
-    otp_session = send_code("+" + country_code + phone)
-
+    otp_session = retry_api(
+        "Sending a verification code to your phone number...",
+        send_code,
+        {"phone": "+" + country_code + phone},
+        "Hmm... there was an issue sending the code.",
+    )
     if otp_session is None:
-        print("Invalid phone number. Please try again.")
+        print("Failed to send verification code; exiting...")
         return None
 
     print("A verification code has been sent to your phone number. Please enter it below.")
 
-    while True:
-        user_code = input("Enter your verification code: ")
-        token = verify_code(otp_session, user_code)
-        if token is not None:
-            break
+    user_code = ask("Enter your verification code: ", lambda x: len(x) == 6, "Invalid verification code!")
 
-        print("Invalid verification code! Please try again.")
+    token = retry_api(
+        "Verifying your authentication token...",
+        verify_code,
+        {"session": otp_session, "code": user_code},
+        "Hmm... there was an issue verifying the code.",
+    )
+    if token is None:
+        print("Failed to verify verification code; exiting...")
+        return None
 
     return f"{country_code}{phone}", token
 
@@ -59,37 +105,21 @@ def options() -> tuple[str, str, Mode]:
     Get the required options.
     """
     print(f"Choose a year for your video. ({YEARS})")
+    year = ask("Enter a year: ", lambda x: x in YEARS, "Invalid year!")
 
-    while True:
-        year = input("Enter a year: ")
-        if year in YEARS:
-            break
-
-        print("Invalid year! Please try again.")
-
-    print("Choose a .wav song for your video. Enter the absolute path.")
-
-    while True:
-        song = input("Enter a song: ")
-        if os.path.exists(song) and song.endswith(".wav"):
-            break
-
-        print("Invalid song! Please try again.")
+    print(
+        "Choose a .wav song for your video. Enter the absolute path. If you're using the CLI make sure the path exists in the container (i.e., /app/songs/...)."
+    )
+    song = ask("Enter a song: ", lambda x: os.path.exists(x) and x.endswith(".wav"), "Invalid song!")
 
     try:
         shutil.copy2(song, SONG_PATH)
     except Exception as error:
         logger.warning("Could not copy music file, received: %s", error)
+        logger.info("Continuing with default music file...")
 
     print("Choose a mode for your video. (classic, modern)")
-
-    while True:
-        mode_str = input("Enter a mode: ")
-        if mode_str in ["classic", "modern"]:
-            break
-
-        print("Invalid mode! Please try again.")
-
+    mode_str = ask("Enter a mode: ", lambda x: x in ["classic", "modern"], "Invalid mode!")
     mode = str2mode(mode_str)
 
     return year, song, mode
