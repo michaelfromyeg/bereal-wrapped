@@ -107,7 +107,8 @@ def create_images(
     primary_filenames = os.listdir(primary_folder)
 
     # Use multiprocessing to process images in parallel
-    with Pool(processes=multiprocessing.cpu_count() - 2) as pool:
+    processes = max(1, multiprocessing.cpu_count() - 2)
+    with Pool(processes=processes) as pool:
         pool.starmap(
             process_image,
             [
