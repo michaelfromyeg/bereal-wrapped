@@ -1,11 +1,11 @@
 {
-    "recommendations": [
-        "charliermarsh.ruff",
-        "ms-python.mypy-type-checker",
-        "tamasfe.even-better-toml",
-        "ms-vscode.makefile-tools",
-        "DavidAnson.vscode-markdownlint",
-        "yzhang.markdown-all-in-one",
-        "EditorConfig.EditorConfig"
-    ]
+  "recommendations": [
+    "charliermarsh.ruff",
+    "ms-python.mypy-type-checker",
+    "tamasfe.even-better-toml",
+    "ms-vscode.makefile-tools",
+    "DavidAnson.vscode-markdownlint",
+    "yzhang.markdown-all-in-one",
+    "EditorConfig.EditorConfig"
+  ]
 }
