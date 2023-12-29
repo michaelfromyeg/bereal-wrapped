@@ -15,7 +15,7 @@ const Footer: React.FC = () => {
   const [otpCode, setOtpCode] = useState<string>("");
   const [otpSession, setOtpSession] = useState<any | null>(null);
   const [token, setToken] = useState<string>("");
-  const [year, setYear] = useState<string>("2022");
+  const [year, setYear] = useState<string>("2023");
   const [file, setFile] = useState<File | null>(null);
   const [mode, setMode] = useState<string>("classic");
   const [videoUrl, setVideoUrl] = useState<string>("");

@@ -3,6 +3,7 @@ Combine two images together, with the secondary image in the top-left corner of 
 """
 import multiprocessing
 import os
+import shutil
 from multiprocessing import Pool
 
 from PIL import Image, ImageChops, ImageDraw, ImageFont
@@ -135,4 +136,15 @@ def cleanup_images(phone: str, year: str) -> None:
     Delete all the images in the primary and secondary folders.
     """
     path = os.path.join(CONTENT_PATH, phone, year)
-    os.removedirs(path)
+
+    try:
+        shutil.rmtree(path)
+        logger.info("Successfully removed %s", path)
+    except FileNotFoundError:
+        logger.info("The directory %s does not exist", path)
+    except PermissionError:
+        logger.error("Permission denied while attempting to remove %s", path)
+    except Exception as e:
+        logger.error("An error occurred: %s", e)
+
+    return None
