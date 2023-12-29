@@ -15,11 +15,15 @@ Ways to use this project.
 
 ### Web
 
-TBD.
+Go to [this](https://bereal.michaeldemar.co) URL.
 
 ### CLI
 
-TBD.
+Clone and set up the repository. (Instructions are below.)
+
+Then run `make cli` from the root.
+
+Eventually, this may be repackaged into a `pip`` install.
 
 ### Docker (CLI)
 
@@ -28,7 +32,10 @@ Run the following command, after launching Docker.
 ```plaintext
 docker pull michaelfromyeg/bereal-wrapped-cli
 
-docker run -it --rm --name bereal-wrapped-cli michaelfromyeg/bereal-wrapped-cli
+docker run -it --rm \
+    -v /some/path/to/songs:/app/songs \
+    -v /some/path/to/videos:/app/bereal/static/videos \
+    --name bereal-wrapped-cli bereal-wrapped-cli
 ```
 
 When it asks for a song path, you'll only be able to use `/app/content/song.wav`. I'm working on making it work with your local file system.
@@ -85,7 +92,29 @@ Then, run it locally with `docker run -p 5000:5000 -it --rm --name bereal-wrappe
 
 First, run `docker build -f Dockerfile.cli -t bereal-wrapped-cli .`.
 
-Then, run it locally with `docker run -it --rm --name bereal-wrapped-cli bereal-wrapped-cli`.
+Then, run it locally with the following command.
+
+```plaintext
+docker run -it --rm \
+    -v /some/path/to/songs:/app/songs \
+    -v /some/path/to/videos:/app/bereal/static/videos \
+    --name bereal-wrapped-cli bereal-wrapped-cli
+
+# e.g.,
+
+docker run -it --rm \
+    -v ~/code/bereal-wrapped/content/songs:/app/songs \
+    -v ~/code/bereal-wrapped/export:/app/bereal/static/videos \
+    --name bereal-wrapped-cli bereal-wrapped-cli
+```
+
+To push the image, do the following.
+
+```plaintext
+docker tag bereal-wrapped-cli:latest michaelfromyeg/bereal-wrapped-cli:latest
+
+docker push michaelfromyeg/bereal-wrapped-cli
+```
 
 ### Project Structure
 
