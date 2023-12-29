@@ -113,7 +113,7 @@ const Footer: React.FC = () => {
               htmlFor="countryCode"
               className="block text-sm font-medium text-gray-700"
             >
-              Country Code
+              Country Code (e.g., 1)
             </label>
             <input
               type="text"
@@ -126,7 +126,7 @@ const Footer: React.FC = () => {
               htmlFor="phoneNumber"
               className="block text-sm font-medium text-gray-700"
             >
-              Phone Number
+              Phone Number (e.g., 7801234567)
             </label>
             <input
               type="text"
@@ -144,7 +144,7 @@ const Footer: React.FC = () => {
               htmlFor="otpCode"
               className="block text-sm font-medium text-gray-700"
             >
-              One-Time Password
+              One-Time Password (e.g., 123456)
             </label>
             <input
               type="text"
@@ -169,8 +169,8 @@ const Footer: React.FC = () => {
               value={year}
               onChange={(e) => setYear(e.target.value)}
             >
-              <option value="2022">2022</option>
               <option value="2023">2023</option>
+              <option value="2022">2022</option>
             </select>
             <label
               htmlFor="song"
@@ -198,7 +198,7 @@ const Footer: React.FC = () => {
               <option value="classic">Classic (30 seconds)</option>
               <option value="full">Full</option>
             </select>
-            <button onClick={handleSettingsSubmit}>Submit Settings</button>
+            <button onClick={handleSettingsSubmit}>Submit</button>
           </>
         )}
         {stage === "videoDisplay" && (
