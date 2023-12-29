@@ -131,13 +131,27 @@ def get_video(filename: str) -> tuple[Response, int]:
         abort(403)
 
 
+@app.errorhandler(400)
+def bad_request(error) -> tuple[Response, int]:
+    logger.error("Got 400 error: %s", error)
+
+    return jsonify(
+        {"error": "Bad Request", "message": "The server could not understand the request due to invalid syntax."}
+    ), 400
+
+
+@app.errorhandler(404)
+def not_found(error) -> tuple[Response, int]:
+    logger.warning("Got 404 for URL %s: %s", request.url, error)
+
+    return jsonify({"error": "Not Found", "message": "This resource does not exist"}), 404
+
+
 @app.errorhandler(500)
-def internal_error(error) -> Response:
+def internal_error(error) -> tuple[Response, int]:
     logger.error("Got 500 error: %s", error)
 
-    response = jsonify({"error": "Internal Server Error", "message": "An internal server error occurred"})
-    response.status_code = 500
-    return response
+    return jsonify({"error": "Internal Server Error", "message": "An internal server error occurred"}), 500
 
 
 if __name__ == "__main__":
@@ -150,4 +164,4 @@ if __name__ == "__main__":
 
     logger.info("Starting BeReal server on %s:%d...", host, port)
 
-    app.run(host=host, port=port, debug=True)
+    app.run(host=host, port=port, debug=FLASK_ENV == "development")
