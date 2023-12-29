@@ -4,10 +4,13 @@ This is the entrypoint for the BeReal server.
 It contains the Flask app routing and the functions to interact with the BeReal API.
 """
 import os
+from datetime import datetime, timedelta
 from typing import Any
 
 from flask import Flask, Response, abort, jsonify, request, send_from_directory
+from flask_apscheduler import APScheduler
 from flask_cors import CORS
+from flask_sqlalchemy import SQLAlchemy
 from itsdangerous import SignatureExpired, URLSafeTimedSerializer
 
 from .bereal import memories, send_code, verify_code
@@ -24,8 +27,28 @@ if FLASK_ENV == "development":
 else:
     CORS(app, resources={r"/*": {"origins": "https://michaeldemar.co"}})
 
-# TODO(michaelfromyeg): make this a database
-PHONE_TO_TOKEN: dict[str, str] = {}
+app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///tokens.db"
+app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
+db = SQLAlchemy(app)
+
+scheduler = APScheduler()
+scheduler.init_app(app)
+scheduler.start()
+
+
+class PhoneToken(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    phone = db.Column(db.String(50), unique=True, nullable=False)
+    token = db.Column(db.String(6), nullable=False)
+    timestamp = db.Column(db.DateTime, default=datetime.utcnow)
+
+    def __repr__(self) -> str:
+        return f"<Phone {self.phoe}>"
+
+
+# Create the table
+with app.app_context():
+    db.create_all()
 
 
 @app.route("/status")
@@ -68,7 +91,7 @@ def validate_otp() -> tuple[Response, int]:
     if token is None:
         return jsonify({"error": "Invalid verification code"}), 400
 
-    PHONE_TO_TOKEN[phone] = token
+    insert_token(phone, token)
 
     return jsonify({"token": token}), 200
 
@@ -82,7 +105,7 @@ def create_video() -> tuple[Response, int]:
     token = request.form["token"]
     short_token = token[:10]
 
-    if phone not in PHONE_TO_TOKEN or PHONE_TO_TOKEN[phone] != token:
+    if token != get_token(phone):
         return jsonify({"error": "Invalid token"}), 400
 
     year = request.form["year"]
@@ -152,6 +175,48 @@ def internal_error(error) -> tuple[Response, int]:
     logger.error("Got 500 error: %s", error)
 
     return jsonify({"error": "Internal Server Error", "message": "An internal server error occurred"}), 500
+
+
+def insert_token(phone: str, token: str) -> None:
+    """
+    Insert a new token into the database.
+    """
+    PhoneToken.query.filter_by(phone=phone).delete()
+
+    new_token = PhoneToken(phone=phone, token=token)
+    db.session.add(new_token)
+    db.session.commit()
+
+    return None
+
+
+def get_token(phone: str) -> str | None:
+    """
+    Get a token from the database.
+    """
+    entry = PhoneToken.query.filter_by(phone=phone).first()
+
+    if entry and (datetime.utcnow() - entry.timestamp) < timedelta(hours=24):
+        return entry.token
+
+    return None
+
+
+def delete_expired_tokens() -> None:
+    """
+    Delete all expired tokens from the database.
+    """
+    expiration_time = datetime.utcnow() - timedelta(hours=24)
+    PhoneToken.query.filter(PhoneToken.timestamp < expiration_time).delete()
+    db.session.commit()
+
+    return None
+
+
+@scheduler.task("interval", id="delete_expired", hours=1, misfire_grace_time=900)
+def scheduled_task():
+    with app.app_context():
+        delete_expired_tokens()
 
 
 if __name__ == "__main__":
