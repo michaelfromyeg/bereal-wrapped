@@ -3,6 +3,7 @@
 .vscode/
 
 content/
+client/
 env/
 
 .editorconfig

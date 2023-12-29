@@ -1,4 +1,8 @@
-.PHONY: server cli typecheck format
+.PHONY: client server cli typecheck format
+
+client:
+	@echo "Booting up the client..."
+	@cd client && npm start
 
 server:
 	@echo "Booting up the server..."

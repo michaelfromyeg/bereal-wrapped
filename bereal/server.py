@@ -138,11 +138,11 @@ def failure() -> str:
 
 
 if __name__ == "__main__":
-    os_host: str | None = os.environ.get("HOST")
-    os_port: str | None = os.environ.get("PORT")
+    OS_HOST: str | None = os.environ.get("HOST")
+    OS_PORT: str | None = os.environ.get("PORT")
 
-    host = os_host or HOST or "localhost"
-    port = os_port or PORT or 5000
+    host = OS_HOST or HOST or "localhost"
+    port = OS_PORT or PORT or 5000
     port = int(port)
 
     logger.info("Starting BeReal server on %s:%d...", host, port)

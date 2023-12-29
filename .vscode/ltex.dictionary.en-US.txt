@@ -25,3 +25,5 @@ submissionPrompt
 getElementById
 processForm
 otp
+localStorage
+getItem

@@ -61,7 +61,7 @@
                         required
                     />
                     <br /><br />
-                    <button type="submit">Send Code</button>
+                    <button type="submit" onclick="token()">Send Code</button>
                 </form>
                 {% if message %}
                 <p>{{ message }}</p>
@@ -76,5 +76,16 @@
                 <a href="/contact">Contact</a>
             </div>
         </footer>
+
+        <script>
+            // See if the user token exists; if it does, pass it back
+            function token() {
+                var token = localStorage.getItem("token");
+
+                if (token) {
+                    window.location.href = "/token/" + token;
+                }
+            }
+        </script>
     </body>
 </html>

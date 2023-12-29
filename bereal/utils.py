@@ -75,6 +75,8 @@ OUTPUT_SLIDESHOW_PATH = os.path.join(VIDEOS_PATH, "slideshow.mp4")
 
 CONTENT_PATH = os.path.join(CWD, "content")
 
+os.makedirs(CONTENT_PATH, exist_ok=True)
+
 PRIMARY_IMAGE_PATH = os.path.join(CONTENT_PATH, "primary")
 SECONDARY_IMAGE_PATH = os.path.join(CONTENT_PATH, "secondary")
 COMBINED_IMAGE_PATH = os.path.join(CONTENT_PATH, "combined")
