@@ -95,6 +95,8 @@ Then, run it locally with `docker run -it --rm --name bereal-wrapped-cli bereal-
 
 ### Current Developments
 
+* [ ] Make files, paths specific to user (i.e., a phone number)
+* [ ] Clean-up steps
 * [ ] Add 'no sound' option
 * [ ] Display RealMoji
 * [ ] Toggle date label setting
