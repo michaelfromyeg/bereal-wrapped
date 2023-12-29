@@ -16,7 +16,18 @@ from itsdangerous import SignatureExpired, URLSafeTimedSerializer
 from .bereal import memories, send_code, verify_code
 from .images import cleanup_images, create_images
 from .logger import logger
-from .utils import CONTENT_PATH, EXPORTS_PATH, FLASK_ENV, GIT_COMMIT_HASH, HOST, PORT, SECRET_KEY, str2mode, year2dates
+from .utils import (
+    CONTENT_PATH,
+    DEFAULT_SONG_PATH,
+    EXPORTS_PATH,
+    FLASK_ENV,
+    GIT_COMMIT_HASH,
+    HOST,
+    PORT,
+    SECRET_KEY,
+    str2mode,
+    year2dates,
+)
 from .videos import build_slideshow
 
 app = Flask(__name__)
@@ -122,10 +133,13 @@ def create_video() -> tuple[Response, int]:
     os.makedirs(song_folder, exist_ok=True)
     song_path = os.path.join(song_folder, "song.wav")
 
-    try:
-        wav_file.save(song_path)
-    except Exception as error:
-        logger.warning("Could not save music file, received: %s", error)
+    if wav_file:
+        try:
+            wav_file.save(song_path)
+        except Exception as error:
+            logger.warning("Could not save music file, received: %s", error)
+    else:
+        song_path = DEFAULT_SONG_PATH
 
     logger.debug("Downloading images locally...")
     result = memories(phone, year, token, sdate, edate)

@@ -78,6 +78,9 @@ FONT_BASE_PATH = os.path.join(STATIC_PATH, "fonts")
 
 IMAGES_PATH = os.path.join(STATIC_PATH, "images")
 
+SONGS_PATH = os.path.join(STATIC_PATH, "songs")
+DEFAULT_SONG_PATH = os.path.join(SONGS_PATH, "midnight-city.wav")
+
 ENDCARD_TEMPLATE_IMAGE_PATH = os.path.join(IMAGES_PATH, "endCard_template.jpg")
 ENDCARD_IMAGE_PATH = os.path.join(IMAGES_PATH, "endCard.jpg")
 OUTLINE_PATH = os.path.join(IMAGES_PATH, "secondary_image_outline.png")

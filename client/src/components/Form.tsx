@@ -77,6 +77,8 @@ const Footer: React.FC = () => {
 
     formData.append("year", year);
     formData.append("mode", mode);
+
+    // if left blank, a default song is used
     if (file) {
       formData.append("file", file);
     }
@@ -176,7 +178,7 @@ const Footer: React.FC = () => {
               htmlFor="song"
               className="block text-sm font-medium text-gray-700"
             >
-              Song
+              Song (if blank, there's a default song!)
             </label>
             <input
               type="file"

@@ -158,9 +158,12 @@ def build_slideshow(image_folder: str, song_path: str, filename: str, mode: Mode
 
     output_file = os.path.join(EXPORTS_PATH, filename)
 
-    if os.path.isfile(output_file):
-        logger.info("Skipping 'build_slideshow' stage; already created!")
-        return None
+    # Always create the slideshow, because song or mode may have changed!
+    # (...this next line is sometimes helpful for debugging, though)
+
+    # if os.path.isfile(output_file):
+    #     logger.info("Skipping 'build_slideshow' stage; already created!")
+    #     return None
 
     create_slideshow(
         input_folder=image_folder,
