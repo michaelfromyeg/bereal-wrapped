@@ -102,6 +102,9 @@ TIMEOUT = config.getint("bereal", "timeout")
 # Utility methods
 def get_git_commit_hash() -> str:
     try:
+        if not os.path.isdir(".git"):
+            return "unknown"
+
         commit_hash = subprocess.check_output(["git", "rev-parse", "--short", "HEAD"]).strip()
         return commit_hash.decode("utf-8")
     except subprocess.CalledProcessError:

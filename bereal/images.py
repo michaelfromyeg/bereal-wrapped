@@ -134,13 +134,5 @@ def cleanup_images(phone: str, year: str) -> None:
     """
     Delete all the images in the primary and secondary folders.
     """
-    primary_path = os.path.join(CONTENT_PATH, phone, year, "primary")
-    secondary_path = os.path.join(CONTENT_PATH, phone, year, "secondary")
-    output_folder = os.path.join(CONTENT_PATH, phone, year, "combined")
-
-    os.makedirs(primary_path, exist_ok=True)
-    os.makedirs(secondary_path, exist_ok=True)
-
-    for folder in [primary_path, secondary_path, output_folder]:
-        for file in os.listdir(folder):
-            os.remove(os.path.join(folder, file))
+    path = os.path.join(CONTENT_PATH, phone, year)
+    os.removedirs(path)

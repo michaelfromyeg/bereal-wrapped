@@ -8,9 +8,9 @@ from time import sleep
 from typing import Any, Callable
 
 from .bereal import memories, send_code, verify_code
-from .images import create_images
+from .images import cleanup_images, create_images
 from .logger import logger
-from .utils import SONG_PATH, YEARS, Mode, str2mode, year2dates
+from .utils import CONTENT_PATH, YEARS, Mode, str2mode, year2dates
 from .videos import build_slideshow
 
 STEPS = 5
@@ -100,7 +100,7 @@ def validate() -> tuple[str, str] | None:
     return f"{country_code}{phone}", token
 
 
-def options() -> tuple[str, str, Mode]:
+def options(phone: str) -> tuple[str, str, Mode]:
     """
     Get the required options.
     """
@@ -112,8 +112,12 @@ def options() -> tuple[str, str, Mode]:
     )
     song = ask("Enter a song: ", lambda x: os.path.exists(x) and x.endswith(".wav"), "Invalid song!")
 
+    song_folder = os.path.join(CONTENT_PATH, phone, year)
+    os.makedirs(song_folder, exist_ok=True)
+    song_path = os.path.join(song_folder, "song.wav")
+
     try:
-        shutil.copy2(song, SONG_PATH)
+        shutil.copy2(song, song_path)
     except Exception as error:
         logger.warning("Could not copy music file, received: %s", error)
         logger.info("Continuing with default music file...")
@@ -146,30 +150,42 @@ def step(idx: int, retval: dict[str, Any] | None) -> dict[str, Any] | None:
             retval["phone"] = phone
             retval["token"] = token
         case 1:  # options
-            year, song, mode = options()
+            year, song, mode = options(retval["phone"])
             sdate, edate = year2dates(year)
 
+            song_folder = os.path.join(CONTENT_PATH, retval["phone"], year)
+            os.makedirs(song_folder, exist_ok=True)
+            song_path = os.path.join(song_folder, "song.wav")
+
+            retval["year"] = year
             retval["sdate"] = sdate
             retval["edate"] = edate
             retval["song"] = song
+            retval["song_path"] = song_path
             retval["mode"] = mode
         case 2:
             if retval["token"] is None or retval["sdate"] is None or retval["edate"] is None:
                 print("Invalid parameters; exiting...")
                 return None
 
-            result = memories(retval["token"], retval["sdate"], retval["edate"])
+            result = memories(retval["phone"], retval["year"], retval["token"], retval["sdate"], retval["edate"])
             if not result:
                 print("Failed to download memories; exiting...")
                 return None
         case 3:
-            create_images()
+            image_folder = create_images(retval["phone"], retval["year"])
+
+            retval["image_folder"] = image_folder
         case 4:
             if retval["mode"] is None:
                 print("Invalid parameters; exiting...")
                 return None
 
-            build_slideshow(retval["mode"])
+            short_token = retval["token"][:10]
+            video_file = f"{short_token}-{retval['phone']}-{retval['year']}.mp4"
+
+            build_slideshow(retval["image_folder"], retval["song_path"], video_file, retval["mode"])
+            cleanup_images(retval["phone"], retval["year"])
         case _:
             raise ValueError(f"Invalid step: {idx}")
 
