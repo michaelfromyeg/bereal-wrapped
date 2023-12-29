@@ -106,6 +106,8 @@ def get_git_commit_hash() -> str:
         return commit_hash.decode("utf-8")
     except subprocess.CalledProcessError:
         return "unknown"
+    except Exception:
+        return "unknown"
 
 
 GIT_COMMIT_HASH = get_git_commit_hash()
