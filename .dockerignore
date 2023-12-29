@@ -1,0 +1,13 @@
+.mypy_cache/
+.ruff_cache/
+.vscode/
+
+content/
+env/
+
+.editorconfig
+.gitignore
+.markdownlint.json
+LICENSE
+log.log
+README.md

@@ -19,16 +19,23 @@ def validate() -> tuple[str, str] | None:
     """
     Authenticate the user.
     """
-    print("Your phone number is required for BeReal authentication; enter it as a 10-digit string.")
+    print("Your phone number is required for BeReal authentication.")
 
     while True:
-        phone = input("Enter your phone number: ")
+        country_code = input("First, enter your country code (e.g., X or XX): ")
+        if len(country_code) in [1, 2]:
+            break
+
+        print("Invalid country code!")
+
+    while True:
+        phone = input("Enter your phone number (e.g., XXXXXXXXXX): ")
         if len(phone) == 10:
             break
 
         print("Invalid phone number!")
 
-    otp_session = send_code("+1" + phone)
+    otp_session = send_code("+" + country_code + phone)
 
     if otp_session is None:
         print("Invalid phone number. Please try again.")
@@ -44,7 +51,7 @@ def validate() -> tuple[str, str] | None:
 
         print("Invalid verification code! Please try again.")
 
-    return phone, token
+    return f"{country_code}{phone}", token
 
 
 def options() -> tuple[str, str, Mode]:

@@ -26,9 +26,9 @@ TBD.
 Run the following command, after launching Docker.
 
 ```plaintext
-docker pull michaelfromyeg/bereal-wrapped
+docker pull michaelfromyeg/bereal-wrapped-cli
 
-docker run -it --rm --name bereal-wrapped michaelfromyeg/bereal-wrapped
+docker run -it --rm --name bereal-wrapped-cli michaelfromyeg/bereal-wrapped-cli
 ```
 
 When it asks for a song path, you'll only be able to use `/app/content/song.wav`. I'm working on making it work with your local file system.
@@ -71,13 +71,21 @@ mypy --install-types
 make run
 ```
 
-The Flask app will be available on [http://localhost:5000](http://localhost:5000/). Multiple folders will be created to pull image data from your memories.
+The Flask app will be available on [http://localhost:5000](http://localhost:5000). Multiple folders will be created to pull image data from your memories.
 
 ### Docker Setup
 
-First, run `docker build -t bereal-wrapped .`.
+#### Docker Setup, Web
 
-Then, run it locally with `docker run -it --rm --name bereal-wrapped bereal-wrapped`.
+First, run `docker build -f Dockerfile -t bereal-wrapped-server .`.
+
+Then, run it locally with `docker run -p 5000:5000 -it --rm --name bereal-wrapped-server bereal-wrapped-server`.
+
+#### Docker Setup, CLI
+
+First, run `docker build -f Dockerfile.cli -t bereal-wrapped-cli .`.
+
+Then, run it locally with `docker run -it --rm --name bereal-wrapped-cli bereal-wrapped-cli`.
 
 ### Project Structure
 

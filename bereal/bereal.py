@@ -14,18 +14,11 @@ from .utils import BASE_URL, PRIMARY_IMAGE_PATH, SECONDARY_IMAGE_PATH, TIMEOUT, 
 def send_code(phone: str) -> Any | None:
     """
     Send a code to the given phone number.
-
-    Phone number can be the ten-digit number, or '+1' and then the number.
-
-    e.g., 1234567890 or +11234567890
-
-    TODO(michaelfromyeg): accept other country codes.
     """
-    if not phone.startswith("+1"):
-        phone = f"+1{phone}"
+    if not phone.startswith("+"):
+        raise ValueError("Missing country code!")
 
-    if len(phone) != 12:
-        raise ValueError("Phone number must be exactly 10 or 12 digits (with the '+1') long.")
+    # TODO(michaelfromyeg): add regex step to validate phone number!
 
     logger.info("Entered phone number is %s", phone)
     payload = {"phone": phone}
@@ -96,8 +89,12 @@ def memories(token: str, sdate: datetime, edate: datetime) -> bool:
         """
         date = str2datetime(date_str)
 
-        if not url or date < sdate or date > edate:
-            logger.warning("Invalid date or missing URL")
+        if not url:
+            logger.warning("Missing URL")
+            return None
+
+        if date < sdate or date > edate:
+            logger.debug("Invalid date: %s", date_str)
             return None
 
         # Extracting the image name from the URL
@@ -116,6 +113,8 @@ def memories(token: str, sdate: datetime, edate: datetime) -> bool:
 
     # iterate through the response and download images
     for item in data_array:
+        logger.debug("Processing %s", item)
+
         date_str = item.get("memoryDay", "")
 
         primary_image_url = item["primary"].get("url", "")

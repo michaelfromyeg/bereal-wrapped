@@ -11,10 +11,8 @@
         <link rel="stylesheet" href="/static/styles.css" />
     </head>
     <body>
-        <!-- Top navigation bar -->
         <div class="navbar">
             <a href="/" style="padding: 0px 10px 0px 0px">
-                <!-- Im sorry if I styled it like this, but i had to. there was no other way :) -->
                 <div class="navbar-title">
                     <img
                         href="/"
@@ -23,7 +21,6 @@
                         width="30"
                         height="30"
                     />
-                    <!-- Adjust image path and dimensions -->
                     <div class="navbar-title-text">BeReel.</div>
                 </div>
             </a>
@@ -36,10 +33,10 @@
         </div>
 
         <div class="container container-process">
-            <h1>Video Settings</h1>
+            <h1>Video settings</h1>
             <p>
-                Verification Successful! Now please fill in the following
-                information for the timelapse.
+                Verification successful! Now please fill in the following
+                information for the time-lapse.
             </p>
 
             <div class="video-settings">
@@ -50,7 +47,8 @@
                     enctype="multipart/form-data"
                 >
                     <div>
-                        <label for="dateRange">Date Range:</label>
+                        <label for="dateRange">Date range:</label>
+                        <!-- TODO(michaelfromyeg): replace with year selection -->
                         <div class="date-range">
                             <input
                                 type="text"
@@ -69,7 +67,7 @@
                         </div>
                     </div>
                     <div>
-                        <label for="fileInput">Select WAV File:</label>
+                        <label for="fileInput">Select .wav file:</label>
                         <input
                             type="file"
                             id="fileInput"
@@ -80,14 +78,14 @@
                         <input type="hidden" name="token" value="{{ token }}" />
                     </div>
                     <div>
-                        <label for="modeInput">Select Clip Length:</label>
+                        <label for="modeInput">Select clip length:</label>
                         <select
                             class="mode-input-select"
                             name="mode"
                             id="modeInput"
                         >
                             <option value="classic">
-                                Classic (30 Seconds with Curve)
+                                Classic (30 seconds with curve)
                             </option>
                             <option value="full">Full Song</option>
                         </select>
@@ -97,13 +95,12 @@
                             Process Data
                         </button>
                         <div id="submissionPrompt" style="visibility: hidden">
-                            <p>Creating Video... check progress in terminal</p>
+                            <p>Creating video...</p>
                         </div>
                     </div>
                 </form>
             </div>
 
-            <!-- Footer -->
             <footer class="footer">
                 <div class="footer-links">
                     <a href="/">Home</a>

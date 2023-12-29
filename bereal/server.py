@@ -9,7 +9,7 @@ from flask import Flask, render_template, request
 from .bereal import memories, send_code, verify_code
 from .images import create_images
 from .logger import logger
-from .utils import SONG_PATH, str2datetime, str2mode
+from .utils import HOST, PORT, SONG_PATH, str2datetime, str2mode
 from .videos import build_slideshow
 
 app = Flask(__name__, template_folder="templates")
@@ -25,8 +25,10 @@ def index() -> str:
     if request.method == "GET":
         return render_template("index.html")
 
+    country_code = request.form["country_code"]
     phone_number = request.form["phone_number"]
-    otp_session = send_code(phone_number)
+
+    otp_session = send_code(f"+{country_code}{phone_number}")
 
     if otp_session is None:
         return render_template(
@@ -135,8 +137,5 @@ def failure() -> str:
 
 
 if __name__ == "__main__":
-    app.run(debug=True)
-
-    # debugging...
-    # create_images()
-    # build_slideshow("classic")
+    logger.info("Starting BeReal server on %s:%d...", HOST, PORT)
+    app.run(host=HOST or "localhost", port=PORT or 5000, debug=True)
