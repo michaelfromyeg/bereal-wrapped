@@ -8,7 +8,7 @@ from time import sleep
 from typing import Any, Callable
 
 from .bereal import memories, send_code, verify_code
-from .images import cleanup_images, create_images
+from .images import create_images
 from .logger import logger
 from .utils import CONTENT_PATH, YEARS, Mode, str2mode, year2dates
 from .videos import build_slideshow
@@ -90,7 +90,7 @@ def validate() -> tuple[str, str] | None:
     token = retry_api(
         "Verifying your authentication token...",
         verify_code,
-        {"session": otp_session, "code": user_code},
+        {"otp_session": otp_session, "otp_code": user_code},
         "Hmm... there was an issue verifying the code.",
     )
     if token is None:
@@ -185,7 +185,9 @@ def step(idx: int, retval: dict[str, Any] | None) -> dict[str, Any] | None:
             video_file = f"{short_token}-{retval['phone']}-{retval['year']}.mp4"
 
             build_slideshow(retval["image_folder"], retval["song_path"], video_file, retval["mode"])
-            cleanup_images(retval["phone"], retval["year"])
+
+            # TODO(michaelfromyeg): delete images in production
+            # cleanup_images(retval["phone"], retval["year"])
         case _:
             raise ValueError(f"Invalid step: {idx}")
 

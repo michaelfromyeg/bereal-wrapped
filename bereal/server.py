@@ -14,7 +14,7 @@ from flask_sqlalchemy import SQLAlchemy
 from itsdangerous import SignatureExpired, URLSafeTimedSerializer
 
 from .bereal import memories, send_code, verify_code
-from .images import cleanup_images, create_images
+from .images import create_images
 from .logger import logger
 from .utils import (
     CONTENT_PATH,
@@ -38,7 +38,8 @@ if FLASK_ENV == "development":
 else:
     CORS(app, resources={r"/*": {"origins": "https://michaeldemar.co"}})
 
-app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///tokens.db"
+basedir = os.path.abspath(os.path.dirname(__file__))
+app.config["SQLALCHEMY_DATABASE_URI"] = f'sqlite:///{os.path.join(basedir, "tokens.db")}'
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 db = SQLAlchemy(app)
 
@@ -150,7 +151,9 @@ def create_video() -> tuple[Response, int]:
 
     image_folder = create_images(phone, year)
     build_slideshow(image_folder, song_path, video_file, mode)
-    cleanup_images(phone, year)
+
+    # TODO(michaelfromyeg): delete images in production
+    # cleanup_images(phone, year)
 
     return jsonify({"videoUrl": video_file}), 200
 

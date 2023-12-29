@@ -108,11 +108,11 @@ def create_images(
     os.makedirs(primary_folder, exist_ok=True)
     os.makedirs(secondary_folder, exist_ok=True)
 
-    os.makedirs(output_folder, exist_ok=True)
-
     if os.path.isdir(output_folder):
         logger.info("Skipping 'create_images' stage; already created!")
         return output_folder
+
+    os.makedirs(output_folder, exist_ok=True)
 
     # Get a list of primary filenames
     primary_filenames = os.listdir(primary_folder)

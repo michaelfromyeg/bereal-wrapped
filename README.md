@@ -124,15 +124,17 @@ docker push michaelfromyeg/bereal-wrapped-cli
 
 ### Current Developments
 
-* [ ] Add a SQLite database; expire videos after 24-hours
-* [ ] Make files, paths specific to user (i.e., a phone number)
-* [ ] Clean-up steps
+* [x] Add a SQLite database; expire videos after 24-hours
+* [x] Make files, paths specific to user (i.e., a phone number)
+* [x] Clean-up steps
 * [ ] Add 'no sound' option
+  * [x] Default music
 * [ ] Display RealMoji
 * [ ] Toggle date label setting
 * [ ] Show render progress on webpage
 * [ ] Batching algorithm for videos
-* [ ] Better phone number support (start with CLI)
+* [x] Better phone number support (start with CLI)
+* [ ] Move files to cloud storage (e.g., AWS)
 
 ## Remarks
 

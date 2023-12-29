@@ -9,6 +9,8 @@ const BASE_URL = IS_PRODUCTION
   : "http://localhost:5000";
 
 const Footer: React.FC = () => {
+  const [loading, setLoading] = useState<boolean>(false);
+
   const [stage, setStage] = useState<Stage>("phoneInput");
   const [phoneNumber, setPhoneNumber] = useState<string>("");
   const [countryCode, setCountryCode] = useState<string>("");
@@ -30,6 +32,8 @@ const Footer: React.FC = () => {
 
         setStage("settings");
       } else {
+        setLoading(true);
+
         const response = await axios.post(`${BASE_URL}/request-otp`, {
           phone: `${countryCode}${phoneNumber}`,
         });
@@ -42,11 +46,14 @@ const Footer: React.FC = () => {
       }
     } catch (error) {
       console.error("Error sending OTP:", error);
+    } finally {
+      setLoading(false);
     }
   };
 
   const handleOtpSubmit = async () => {
     try {
+      setLoading(true);
       const response = await axios.post(`${BASE_URL}/validate-otp`, {
         phone: `${countryCode}${phoneNumber}`,
         otp_session: otpSession,
@@ -67,6 +74,8 @@ const Footer: React.FC = () => {
       setStage("settings");
     } catch (error) {
       console.error("Error validating OTP:", error);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -84,6 +93,7 @@ const Footer: React.FC = () => {
     }
 
     try {
+      setLoading(true);
       const response = await axios.post(`${BASE_URL}/video`, formData, {
         headers: {
           "Content-Type": "multipart/form-data",
@@ -98,6 +108,8 @@ const Footer: React.FC = () => {
       setStage("videoDisplay");
     } catch (error) {
       console.error("Error submitting settings:", error);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -137,7 +149,9 @@ const Footer: React.FC = () => {
               value={phoneNumber}
               onChange={(e) => setPhoneNumber(e.target.value)}
             />
-            <button onClick={handlePhoneSubmit}>Send OTP</button>
+            <button onClick={handlePhoneSubmit} disabled={loading}>
+              Send OTP
+            </button>
           </>
         )}
         {stage === "otpInput" && (
@@ -155,7 +169,9 @@ const Footer: React.FC = () => {
               value={otpCode}
               onChange={(e) => setOtpCode(e.target.value)}
             />
-            <button onClick={handleOtpSubmit}>Validate OTP</button>
+            <button onClick={handleOtpSubmit} disabled={loading}>
+              Validate OTP
+            </button>
           </>
         )}
         {stage === "settings" && (
@@ -200,7 +216,9 @@ const Footer: React.FC = () => {
               <option value="classic">Classic (30 seconds)</option>
               <option value="full">Full</option>
             </select>
-            <button onClick={handleSettingsSubmit}>Submit</button>
+            <button onClick={handleSettingsSubmit} disabled={loading}>
+              Submit
+            </button>
           </>
         )}
         {stage === "videoDisplay" && (
