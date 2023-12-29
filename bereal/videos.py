@@ -10,7 +10,7 @@ from PIL import Image, ImageDraw, ImageFont
 
 from .logger import logger
 from .utils import (
-    ENDCARD_IMAGE_PATH,
+    CONTENT_PATH,
     ENDCARD_TEMPLATE_IMAGE_PATH,
     EXPORTS_PATH,
     FONT_BASE_PATH,
@@ -45,9 +45,10 @@ def create_endcard(n_images: int, font_size: int = 50, offset: int = 110) -> str
 
     draw.text((x, y), text, font=font, fill="white")
 
-    img.save(ENDCARD_IMAGE_PATH)
+    encard_image_path = os.path.join(CONTENT_PATH, "endcard.png")
+    img.save(encard_image_path)
 
-    return ENDCARD_IMAGE_PATH
+    return encard_image_path
 
 
 def create_slideshow(
