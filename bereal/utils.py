@@ -86,8 +86,8 @@ config = configparser.ConfigParser()
 
 config.read("config.ini")
 
-HOST = config.get("bereal", "host")
-PORT = config.getint("bereal", "port")
+HOST: str | None = config.get("bereal", "host", fallback=None)
+PORT: int | None = config.getint("bereal", "port", fallback=None)
 
 TIMEOUT = config.getint("bereal", "timeout")
 

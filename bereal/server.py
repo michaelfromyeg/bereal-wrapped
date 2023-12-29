@@ -3,6 +3,7 @@ This is the entrypoint for the BeReal server.
 
 It contains the Flask app routing and the functions to interact with the BeReal API.
 """
+import os
 
 from flask import Flask, render_template, request
 
@@ -137,5 +138,13 @@ def failure() -> str:
 
 
 if __name__ == "__main__":
-    logger.info("Starting BeReal server on %s:%d...", HOST, PORT)
-    app.run(host=HOST or "localhost", port=PORT or 5000, debug=True)
+    os_host: str | None = os.environ.get("HOST")
+    os_port: str | None = os.environ.get("PORT")
+
+    host = os_host or HOST or "localhost"
+    port = os_port or PORT or 5000
+    port = int(port)
+
+    logger.info("Starting BeReal server on %s:%d...", host, port)
+
+    app.run(host=host, port=port, debug=True)
