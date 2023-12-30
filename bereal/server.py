@@ -65,7 +65,10 @@ class PhoneToken(db.Model):
 
 # Create the table
 with app.app_context():
-    db.create_all()
+    try:
+        db.create_all()
+    except Exception as error:
+        logger.error("Could not create database: %s", error)
 
 
 @app.route("/status")
