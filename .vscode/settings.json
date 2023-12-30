@@ -6,7 +6,8 @@
   "editor.formatOnSave": true,
   "editor.codeActionsOnSave": {
     "source.fixAll": "explicit",
-    "source.organizeImports": "explicit"
+    // TODO(michaelfromyeg): make this happen for everything except CSS
+    "source.organizeImports": "never"
   },
   "python.terminal.activateEnvironment": true,
   "python.terminal.activateEnvInCurrentTerminal": true,

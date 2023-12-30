@@ -1,5 +1,6 @@
 import axios from "axios";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
+import { ToastContainer, toast } from "react-toastify";
 
 type Stage = "phoneInput" | "otpInput" | "settings" | "videoDisplay";
 
@@ -10,6 +11,7 @@ const BASE_URL = IS_PRODUCTION
 
 const Footer: React.FC = () => {
   const [loading, setLoading] = useState<boolean>(false);
+  const [error, setError] = useState<any | null>(null);
 
   const [stage, setStage] = useState<Stage>("phoneInput");
   const [phoneNumber, setPhoneNumber] = useState<string>("");
@@ -22,28 +24,71 @@ const Footer: React.FC = () => {
   const [mode, setMode] = useState<string>("classic");
   const [videoUrl, setVideoUrl] = useState<string>("");
 
-  const handlePhoneSubmit = async () => {
-    try {
-      const session = localStorage.getItem("session");
-      if (session) {
-        const sessionData = JSON.parse(session);
-        setOtpSession(sessionData.otpSession);
-        setToken(sessionData.token);
+  const showErrorToast = (errorMessage: string) => {
+    toast.error(errorMessage, {
+      position: "top-right",
+      autoClose: 5000,
+      hideProgressBar: false,
+      closeOnClick: true,
+      pauseOnHover: true,
+      draggable: true,
+      progress: undefined,
+    });
+  };
 
-        setStage("settings");
-      } else {
-        setLoading(true);
-
-        const response = await axios.post(`${BASE_URL}/request-otp`, {
-          phone: `${countryCode}${phoneNumber}`,
-        });
-
-        console.log(response.data);
-
-        setOtpSession(response.data?.otpSession);
-
-        setStage("otpInput");
+  useEffect(() => {
+    const interceptor = axios.interceptors.response.use(
+      (response) => response,
+      (error) => {
+        setError(error);
+        return Promise.reject(error);
       }
+    );
+
+    return () => {
+      axios.interceptors.response.eject(interceptor);
+    };
+  }, []);
+
+  useEffect(() => {
+    if (error) {
+      // Handle the error with showErrorToast and other logic
+      let errorMessage = "An error occurred";
+      if (error.response) {
+        errorMessage = `Error: ${error.response.data.message}`;
+      } else if (error.request) {
+        errorMessage = "No response received from server";
+      } else if (error && error.message) {
+        errorMessage = error.message;
+      }
+
+      showErrorToast(errorMessage);
+      localStorage.removeItem("session");
+      setStage("phoneInput");
+    }
+  }, [error]);
+
+  const handlePhoneSubmit = async () => {
+    const session = localStorage.getItem("session");
+    let sessionData = session ? JSON.parse(session) : null;
+
+    if (sessionData && sessionData.phone === `${countryCode}${phoneNumber}`) {
+      setOtpSession(sessionData.otpSession);
+      return;
+    }
+
+    setLoading(true);
+    localStorage.removeItem("session");
+
+    try {
+      const response = await axios.post(`${BASE_URL}/request-otp`, {
+        phone: `${countryCode}${phoneNumber}`,
+      });
+
+      console.log(response.data);
+
+      setOtpSession(response.data?.otpSession);
+      setStage("otpInput");
     } catch (error) {
       console.error("Error sending OTP:", error);
     } finally {
@@ -67,6 +112,7 @@ const Footer: React.FC = () => {
       const sessionData = {
         otpSession,
         token: response.data?.token,
+        phone: `${countryCode}${phoneNumber}`,
       };
 
       localStorage.setItem("session", JSON.stringify(sessionData));
@@ -116,9 +162,14 @@ const Footer: React.FC = () => {
   return (
     <div className="App">
       <h1 className="text-4xl font-bold text-center mb-3">BeReal. Recap.</h1>
-      <p className="text-center mb-6">
+      <p className="text-center mb-3">
         Create a 2022-style recap for 2022 or 2023. Needs your phone number.
         More information on GitHub.
+      </p>
+      <p className="text-center mb-6">
+        The app is admittedly a bit flakey, so try to follow instructions
+        carefully, and if you get an error, refresh the page and try again. If
+        errors persist, feel free to make an issue on GitHub.
       </p>
       <div>
         {stage === "phoneInput" && (
