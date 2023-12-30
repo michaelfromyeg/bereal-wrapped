@@ -39,7 +39,7 @@ serializer = URLSafeTimedSerializer(SECRET_KEY)
 if FLASK_ENV == "development":
     CORS(app)
 else:
-    CORS(app, resources={r"/*": {"origins": "https://michaeldemar.co"}})
+    CORS(app, resources={r"/*": {"origins": "https://bereal.michaeldemar.co"}})
 
 basedir = os.path.abspath(os.path.dirname(__file__))
 app.config["SQLALCHEMY_DATABASE_URI"] = f'sqlite:///{os.path.join(basedir, "tokens.db")}'
