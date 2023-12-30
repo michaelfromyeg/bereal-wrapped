@@ -41,7 +41,7 @@ if FLASK_ENV == "development":
     CORS(app)
 else:
     logger.info("Enabling CORS for production")
-    CORS(app, resources={r"/*": {"origins": "https://api.bereal.michaeldemar.co"}}, supports_credentials=True)
+    CORS(app, resources={r"/*": {"origins": "https://bereal.michaeldemar.co"}}, supports_credentials=True)
 
 basedir = os.path.abspath(os.path.dirname(__file__))
 app.config["SQLALCHEMY_DATABASE_URI"] = f'sqlite:///{os.path.join(basedir, "tokens.db")}'
