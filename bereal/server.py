@@ -37,8 +37,10 @@ app = Flask(__name__)
 serializer = URLSafeTimedSerializer(SECRET_KEY)
 
 if FLASK_ENV == "development":
+    logger.info("Enabling CORS for development")
     CORS(app)
 else:
+    logger.info("Enabling CORS for production")
     CORS(app, resources={r"/*": {"origins": "https://bereal.michaeldemar.co"}})
 
 basedir = os.path.abspath(os.path.dirname(__file__))
