@@ -260,4 +260,4 @@ if __name__ == "__main__":
 
     logger.info("Starting BeReal server on %s:%d...", host, port)
 
-    app.run(host=host, port=port, debug=FLASK_ENV == "development")
+    app.run(host=host, port=port, debug=(os.getenv("FLASK_ENV") or "production") == "development")
