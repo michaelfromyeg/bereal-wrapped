@@ -11,4 +11,4 @@ ENV FLASK_APP=bereal.server
 
 EXPOSE 5000
 
-CMD ["gunicorn", "-k", "gevent", "-w", "4", "-t" "600", "bereal.server:app"]
+CMD ["gunicorn", "-k", "gevent", "-w", "4", "-t", "600", "bereal.server:app"]
