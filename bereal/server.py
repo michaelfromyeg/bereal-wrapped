@@ -85,7 +85,7 @@ def request_otp() -> tuple[Response, int]:
     otp_session = send_code(f"+{phone}")
 
     if otp_session is None:
-        return jsonify({"error": "Invalid phone number"}), 400
+        return jsonify({"error": "Bad Request", "message": "Invalid phone number"}), 400
 
     return jsonify({"otpSession": otp_session}), 200
 
@@ -104,7 +104,7 @@ def validate_otp() -> tuple[Response, int]:
     token = verify_code(otp_session, otp_code)
 
     if token is None:
-        return jsonify({"error": "Invalid verification code"}), 400
+        return jsonify({"error": "Bad Request", "message": "Invalid verification code"}), 400
 
     insert_token(phone, token)
 
@@ -121,7 +121,7 @@ def create_video() -> tuple[Response, int]:
     short_token = token[:10]
 
     if token != get_token(phone):
-        return jsonify({"error": "Invalid token"}), 400
+        return jsonify({"error": "Bad Request", "message": "Invalid token"}), 400
 
     year = request.form["year"]
     sdate, edate = year2dates(year)
@@ -148,7 +148,7 @@ def create_video() -> tuple[Response, int]:
     result = memories(phone, year, token, sdate, edate)
 
     if not result:
-        return jsonify({"error": "Could not generate images; try again later"}), 500
+        return jsonify({"error": "Internal Server Error", "message": "Could not generate images; try again later"}), 500
 
     video_file = f"{short_token}-{phone}-{year}.mp4"
 

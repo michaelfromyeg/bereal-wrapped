@@ -1,6 +1,6 @@
 import axios from "axios";
 import React, { useEffect, useState } from "react";
-import { ToastContainer, toast } from "react-toastify";
+import { toast } from "react-toastify";
 
 type Stage = "phoneInput" | "otpInput" | "settings" | "videoDisplay";
 
@@ -54,7 +54,11 @@ const Footer: React.FC = () => {
     if (error) {
       // Handle the error with showErrorToast and other logic
       let errorMessage = "An error occurred";
-      if (error.response) {
+      if (
+        error.response &&
+        error.response.data &&
+        error.response.data.message
+      ) {
         errorMessage = `Error: ${error.response.data.message}`;
       } else if (error.request) {
         errorMessage = "No response received from server";
