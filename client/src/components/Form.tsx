@@ -2,11 +2,13 @@ import axios from "axios";
 import React, { useEffect, useState } from "react";
 import { toast } from "react-toastify";
 
+axios.defaults.withCredentials = true;
+
 type Stage = "phoneInput" | "otpInput" | "settings" | "videoDisplay";
 
 const IS_PRODUCTION = process.env.NODE_ENV === "production";
 const BASE_URL = IS_PRODUCTION
-  ? "https://bereal-api.michaeldemar.co"
+  ? "https://api.bereal.michaeldemar.co"
   : "http://localhost:5000";
 
 const Footer: React.FC = () => {

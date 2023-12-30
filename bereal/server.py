@@ -41,7 +41,7 @@ if FLASK_ENV == "development":
     CORS(app)
 else:
     logger.info("Enabling CORS for production")
-    CORS(app, resources={r"/*": {"origins": "https://bereal.michaeldemar.co"}})
+    CORS(app, resources={r"/*": {"origins": "https://*.michaeldemar.co"}}, supports_credentials=True)
 
 basedir = os.path.abspath(os.path.dirname(__file__))
 app.config["SQLALCHEMY_DATABASE_URI"] = f'sqlite:///{os.path.join(basedir, "tokens.db")}'
@@ -260,4 +260,4 @@ if __name__ == "__main__":
 
     logger.info("Starting BeReal server on %s:%d...", host, port)
 
-    app.run(host=host, port=port, debug=(os.getenv("FLASK_ENV") or "production") == "development")
+    app.run(host=host, port=port, debug=FLASK_ENV == "development")
