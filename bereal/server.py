@@ -85,7 +85,12 @@ def request_otp() -> tuple[Response, int]:
     otp_session = send_code(f"+{phone}")
 
     if otp_session is None:
-        return jsonify({"error": "Bad Request", "message": "Invalid phone number"}), 400
+        return jsonify(
+            {
+                "error": "Bad Request",
+                "message": "Invalid phone number; make sure not to include anything besides the digits (i.e., not '+' or '-' or spaces)",
+            }
+        ), 400
 
     return jsonify({"otpSession": otp_session}), 200
 
