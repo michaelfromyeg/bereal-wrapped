@@ -3,6 +3,11 @@ This is the entrypoint for the BeReal server.
 
 It contains the Flask app routing and the functions to interact with the BeReal API.
 """
+from gevent import monkey
+
+# TODO(michaelfromyeg): move
+monkey.patch_all()
+
 import os
 import warnings
 from datetime import datetime, timedelta
