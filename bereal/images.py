@@ -1,10 +1,8 @@
 """
 Combine two images together, with the secondary image in the top-left corner of the primary image.
 """
-import multiprocessing
 import os
 import shutil
-from multiprocessing import Pool
 
 from PIL import Image, ImageChops, ImageDraw, ImageFont
 
@@ -117,16 +115,22 @@ def create_images(
     # Get a list of primary filenames
     primary_filenames = os.listdir(primary_folder)
 
+    # NOTE(michaelfromyeg): because we're using celery, the below code is unusable
+    # specifically, "AssertionError: daemonic processes are not allowed to have children"
+
+    for primary_filename in primary_filenames:
+        process_image(primary_filename, primary_folder, secondary_folder, output_folder)
+
     # Use multiprocessing to process images in parallel
-    processes = max(1, multiprocessing.cpu_count() - 2)
-    with Pool(processes=processes) as pool:
-        pool.starmap(
-            process_image,
-            [
-                (primary_filename, primary_folder, secondary_folder, output_folder)
-                for primary_filename in primary_filenames
-            ],
-        )
+    # processes = max(1, multiprocessing.cpu_count() - 2)
+    # with Pool(processes=processes) as pool:
+    #     pool.starmap(
+    #         process_image,
+    #         [
+    #             (primary_filename, primary_folder, secondary_folder, output_folder)
+    #             for primary_filename in primary_filenames
+    #         ],
+    #     )
 
     return output_folder
 

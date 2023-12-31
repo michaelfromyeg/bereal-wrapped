@@ -1,22 +1,5 @@
 """
 Utility functions and constants.
-
-Idea for phone numbers as directory base.
-
-import os
-
-def insert_directory(original_path, new_dir, position):
-    path_list = original_path.split(os.sep)
-    path_list.insert(position, new_dir)
-    new_path = os.path.join(*path_list)
-    return new_path
-
-original_path = "/a/b/c"
-new_dir = "d"
-position = 2  # Position after 'a'
-
-new_path = insert_directory(original_path, new_dir, position)
-print(new_path)  # Outputs: /a/d/b/c
 """
 import configparser
 import os
@@ -25,6 +8,7 @@ from datetime import datetime
 from enum import StrEnum
 
 from dotenv import load_dotenv
+
 
 # Environment variables
 load_dotenv()
@@ -96,10 +80,15 @@ config = configparser.ConfigParser()
 
 config.read("config.ini")
 
-HOST: str | None = config.get("bereal", "host", fallback=None)
-PORT: int | None = config.getint("bereal", "port", fallback=None)
+HOST: str | None = os.getenv("HOST") or config.get("bereal", "host", fallback="localhost")
+PORT: str | None = os.getenv("PORT") or config.get("bereal", "port", fallback="5000")
+PORT = int(PORT) if PORT is not None else None
 
-TIMEOUT = config.getint("bereal", "timeout")
+REDIS_HOST: str | None = os.getenv("REDIS_HOST") or config.get("bereal", "redis_host", fallback="redis")
+REDIS_PORT: str | None = os.getenv("REDIS_PORT") or config.get("bereal", "redis_port", fallback="6379")
+REDIS_PORT = int(REDIS_PORT) if REDIS_PORT is not None else None
+
+TIMEOUT = config.getint("bereal", "timeout", fallback=10)
 
 
 # Utility methods

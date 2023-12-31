@@ -1,8 +1,40 @@
-.PHONY: client server cli typecheck format
+.PHONY: client start-redis celery server cli typecheck format
 
 client:
 	@echo "Booting up the client..."
 	@cd client && npm start
+
+build:
+	@echo "Building the server..."
+	@docker-compose build
+
+up:
+	@echo "Booting up the server..."
+	@docker-compose up -d
+
+down:
+	@echo "Shutting down the server..."
+	@docker-compose down
+
+kill:
+	@echo "Killing the server..."
+	@docker-compose kill
+
+start-redis:
+	@echo "Booting up Redis..."
+	@redis-server /etc/redis/redis.conf
+
+check-redis:
+	@echo "Checking Redis..."
+	@redis-cli ping
+
+celery:
+	@echo "Booting up Celery..."
+	@celery -A bereal.celery worker --loglevel=DEBUG --logfile=celery.log -E
+
+flower:
+	@echo "Booting up Flower..."
+	@celery -A bereal.celery flower --address=0.0.0.0 --inspect --enable-events --loglevel=DEBUG --logfile=flower.log
 
 server:
 	@echo "Booting up the server..."

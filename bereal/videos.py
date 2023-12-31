@@ -19,7 +19,7 @@ from .utils import (
 )
 
 
-def create_endcard(n_images: int, font_size: int = 50, offset: int = 110) -> str:
+def create_endcard(phone: str, year: str, n_images: int, font_size: int = 50, offset: int = 110) -> str:
     """
     Dynamically the final end card image, with the centered text "n_images memories and counting...".
 
@@ -45,13 +45,15 @@ def create_endcard(n_images: int, font_size: int = 50, offset: int = 110) -> str
 
     draw.text((x, y), text, font=font, fill="white")
 
-    encard_image_path = os.path.join(CONTENT_PATH, "endcard.png")
+    encard_image_path = os.path.join(CONTENT_PATH, phone, year, "endcard.png")
     img.save(encard_image_path)
 
     return encard_image_path
 
 
 def create_slideshow(
+    phone: str,
+    year: str,
     input_folder: str,
     output_file: str,
     music_file: str | None,
@@ -86,13 +88,13 @@ def create_slideshow(
     # Create a clip for each image, with length determined by the timestamp
     def generate_inner_clips() -> Generator[ImageSequenceClip, Any, None]:
         for image_path, timestamp in zip(image_paths, timestamps):
-            logger.info("Yielding clip %s", image_path)
+            logger.debug("Yielding clip %s", image_path)
 
             clip = ImageSequenceClip([image_path], fps=1 / timestamp)
             yield clip
 
     # Append the end card
-    endcard_image_path = create_endcard(n_images=n_images)
+    endcard_image_path = create_endcard(phone=phone, year=year, n_images=n_images)
     endcard_clip = ImageSequenceClip([endcard_image_path], fps=1 / 3)
 
     def generate_all_clips() -> Generator[ImageSequenceClip, Any, None]:
@@ -145,7 +147,9 @@ def convert_to_durations(timestamps: list[float]) -> list[float]:
     return durations
 
 
-def build_slideshow(image_folder: str, song_path: str, filename: str, mode: Mode = Mode.CLASSIC) -> None:
+def build_slideshow(
+    phone: str, year: str, image_folder: str, song_path: str, filename: str, mode: Mode = Mode.CLASSIC
+) -> None:
     """
     Create the actual slideshow.
     """
@@ -158,6 +162,7 @@ def build_slideshow(image_folder: str, song_path: str, filename: str, mode: Mode
     logger.debug("Beat times: %s", beat_times)
 
     output_file = os.path.join(EXPORTS_PATH, filename)
+    logger.info("Creating slideshow at %s", output_file)
 
     # Always create the slideshow, because song or mode may have changed!
     # (...this next line is sometimes helpful for debugging, though)
@@ -167,6 +172,8 @@ def build_slideshow(image_folder: str, song_path: str, filename: str, mode: Mode
     #     return None
 
     create_slideshow(
+        phone=phone,
+        year=year,
         input_folder=image_folder,
         output_file=output_file,
         music_file=song_path,

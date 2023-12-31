@@ -2,7 +2,7 @@ import React from "react";
 
 const Footer: React.FC = () => {
   return (
-    <footer className="w-full bg-white text-center p-4 absolute bottom-0 left-0">
+    <footer className="text-center">
       <div className="flex justify-center items-center space-x-4">
         <div className="mb-0">a project from Michael DeMarco</div>
         <span>|</span>
@@ -14,15 +14,17 @@ const Footer: React.FC = () => {
         >
           GitHub
         </a>
-        {/* <span>|</span>
-        <a
-          href="https://yourdonationlink.com"
-          target="_blank"
-          rel="noopener noreferrer"
-          className="hover:text-blue-300"
-        >
-          Donate
-        </a> */}
+        {/*
+          <span>|</span>
+          <a
+            href="https://yourdonationlink.com"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="hover:text-blue-300"
+          >
+            Donate
+          </a>
+        */}
       </div>
     </footer>
   );

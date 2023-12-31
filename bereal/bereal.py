@@ -112,7 +112,7 @@ def memories(phone: str, year: str, token: str, sdate: datetime, edate: datetime
 
             if img_response.status_code == 200:
                 img_file.write(img_response.content)
-                logger.info("Downloaded %s", image_name)
+                logger.debug("Downloaded %s", image_name)
             else:
                 logger.warning(
                     "Failed to download %s with code %d; will continue", image_name, img_response.status_code

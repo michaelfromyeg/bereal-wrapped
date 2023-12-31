@@ -5,7 +5,6 @@ It contains the Flask app routing and the functions to interact with the BeReal 
 """
 from gevent import monkey
 
-# TODO(michaelfromyeg): move
 monkey.patch_all()
 
 import os
@@ -13,14 +12,14 @@ import warnings
 from datetime import datetime, timedelta
 from typing import Any
 
-from flask import Flask, Response, abort, jsonify, request, send_from_directory
+from flask import Flask, Response, jsonify, request, send_from_directory
 from flask_apscheduler import APScheduler
 from flask_cors import CORS
 from flask_sqlalchemy import SQLAlchemy
-from itsdangerous import SignatureExpired, URLSafeTimedSerializer
+from itsdangerous import URLSafeTimedSerializer
 
-from .bereal import memories, send_code, verify_code
-from .images import create_images
+from .bereal import send_code, verify_code
+from .celery import bcelery, make_video
 from .logger import logger
 from .utils import (
     CONTENT_PATH,
@@ -30,16 +29,21 @@ from .utils import (
     GIT_COMMIT_HASH,
     HOST,
     PORT,
+    REDIS_HOST,
+    REDIS_PORT,
     SECRET_KEY,
     str2mode,
-    year2dates,
 )
-from .videos import build_slideshow
 
 warnings.filterwarnings("ignore", category=UserWarning, module="tzlocal")
 
 app = Flask(__name__)
 serializer = URLSafeTimedSerializer(SECRET_KEY)
+
+logger.info("Running in %s mode", FLASK_ENV)
+
+logger.info("CONTENT_PATH: %s", CONTENT_PATH)
+logger.info("EXPORTS_PATH: %s", EXPORTS_PATH)
 
 if FLASK_ENV == "development":
     logger.info("Enabling CORS for development")
@@ -56,6 +60,9 @@ db = SQLAlchemy(app)
 scheduler = APScheduler()
 scheduler.init_app(app)
 scheduler.start()
+
+app.config["CELERY_BROKER_URL"] = f"redis://{REDIS_HOST}:{REDIS_PORT}/0"
+bcelery.conf.update(app.config)
 
 
 class PhoneToken(db.Model):
@@ -98,7 +105,7 @@ def request_otp() -> tuple[Response, int]:
         return jsonify(
             {
                 "error": "Bad Request",
-                "message": "Invalid phone number; make sure not to include anything besides the digits (i.e., not '+' or '-' or spaces)",
+                "message": "Invalid phone number; BeReal is likely rate-limiting the service. Make sure not to include anything besides the digits (i.e., not '+' or '-' or spaces).",
             }
         ), 400
 
@@ -133,13 +140,11 @@ def create_video() -> tuple[Response, int]:
     """
     phone = request.form["phone"]
     token = request.form["token"]
-    short_token = token[:10]
 
     if token != get_token(phone):
         return jsonify({"error": "Bad Request", "message": "Invalid token"}), 400
 
     year = request.form["year"]
-    sdate, edate = year2dates(year)
 
     wav_file = request.files.get("file", None)
 
@@ -159,21 +164,37 @@ def create_video() -> tuple[Response, int]:
     else:
         song_path = DEFAULT_SONG_PATH
 
-    logger.debug("Downloading images locally...")
-    result = memories(phone, year, token, sdate, edate)
+    logger.debug("Queueing video task...")
+    task = make_video.delay(token, phone, year, song_path, mode)
 
-    if not result:
-        return jsonify({"error": "Internal Server Error", "message": "Could not generate images; try again later"}), 500
+    return jsonify({"taskId": task.id}), 202
 
-    video_file = f"{short_token}-{phone}-{year}.mp4"
 
-    image_folder = create_images(phone, year)
-    build_slideshow(image_folder, song_path, video_file, mode)
+@app.route("/status/<task_id>", methods=["GET"])
+def task_status(task_id) -> tuple[Response, int]:
+    task = make_video.AsyncResult(task_id)
 
-    # TODO(michaelfromyeg): delete images in production
-    # cleanup_images(phone, year)
+    try:
+        if task.state == "PENDING":
+            response = {"status": "PENDING"}
+            return jsonify(response), 202
 
-    return jsonify({"videoUrl": video_file}), 200
+        if task.state == "FAILURE":
+            logger.error("Task %s failed: %s", task_id, task.info)
+
+            response = {
+                "status": "FAILURE",
+                "message": "An error occurred processing your task. Try again later.",
+                "error": str(task.info),
+            }
+            return jsonify(response), 500
+
+        response = {"status": task.status, "result": task.result if task.state == "SUCCESS" else None}
+        return jsonify(response), 200
+    except Exception as e:
+        # Handle cases where task is not registered or result is not JSON serializable
+        response = {"status": "ERROR", "message": "An unexpected error occurred in creating the video", "error": str(e)}
+        return jsonify(response), 500
 
 
 @app.route("/video/<filename>", methods=["GET"])
@@ -181,11 +202,8 @@ def get_video(filename: str) -> tuple[Response, int]:
     """
     Serve a video file.
     """
-    try:
-        return send_from_directory(EXPORTS_PATH, filename, mimetype="video/mp4"), 200
-    except SignatureExpired:
-        # TODO(michaelfromyeg): implement this
-        abort(403)
+    logger.debug("Serving video file %s/%s...", EXPORTS_PATH, filename)
+    return send_from_directory(EXPORTS_PATH, filename, mimetype="video/mp4"), 200
 
 
 @app.route("/favicon.ico")
@@ -259,13 +277,6 @@ def scheduled_task():
 
 
 if __name__ == "__main__":
-    OS_HOST: str | None = os.environ.get("HOST")
-    OS_PORT: str | None = os.environ.get("PORT")
+    logger.info("Starting BeReal server on %s:%d...", HOST, PORT)
 
-    host = OS_HOST or HOST or "localhost"
-    port = OS_PORT or PORT or 5000
-    port = int(port)
-
-    logger.info("Starting BeReal server on %s:%d...", host, port)
-
-    app.run(host=host, port=port, debug=FLASK_ENV == "development")
+    app.run(host=HOST, port=PORT, debug=FLASK_ENV == "development")
