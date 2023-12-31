@@ -136,9 +136,10 @@ Opted for Digital Ocean. Cheap, easy, and supports `docker-compose`.
 * [ ] Display RealMoji
 * [ ] Toggle date label setting
 * [ ] Show render progress on webpage
-* [ ] Batching algorithm for videos
+* [x] Batching algorithm for videos
 * [x] Better phone number support (start with CLI)
 * [ ] Move files to cloud storage (e.g., AWS)
+* [ ] Handle 443s everywhere
 
 ## Remarks
 
