@@ -116,6 +116,10 @@ docker tag bereal-wrapped-cli:latest michaelfromyeg/bereal-wrapped-cli:latest
 docker push michaelfromyeg/bereal-wrapped-cli
 ```
 
+### Deployment
+
+Opted for Digital Ocean. Cheap, easy, and supports `docker-compose`.
+
 ### Project Structure
 
 * `main.py` the main flask app and drives webpage and API requests

@@ -6,7 +6,7 @@ services:
       context: .
       dockerfile: Dockerfile
     volumes:
-      - /mnt/videos:/app/exports
+      - ./videos:/app/exports
     user: thekid
     ports:
       - "5000:5000"
@@ -20,7 +20,7 @@ services:
       context: .
       dockerfile: Dockerfile
     volumes:
-      - /mnt/videos:/app/exports
+      - ./videos:/app/exports
     user: thekid
     command: celery -A bereal.celery worker --loglevel=INFO --logfile=celery.log -E
     environment:
@@ -33,14 +33,3 @@ services:
     image: "redis:alpine"
     ports:
       - "6379:6379"
-
-  nginx:
-    image: nginx:alpine
-    ports:
-      - "80:80"
-      - "443:443"
-    volumes:
-      - ./nginx/nginx.conf:/etc/nginx/conf.d/default.conf:ro
-      - /path/to/ssl/certs:/etc/ssl/certs:ro # Mount SSL certificate and key
-    depends_on:
-      - web
