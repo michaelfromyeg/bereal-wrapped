@@ -13,6 +13,8 @@ interface Props {
 const VideoProcessor: React.FC<Props> = (props: Props) => {
   const { taskId, setResult, setError, setStage } = props;
 
+  const [errorCount, setErrorCount] = useState<number>(0);
+
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [progress, setProgress] = useState<number>(0);
 
@@ -21,7 +23,22 @@ const VideoProcessor: React.FC<Props> = (props: Props) => {
       if (taskId) {
         try {
           const response = await axios.get(`${BASE_URL}/status/${taskId}`);
+          if (response.status > 299) {
+            console.warn("Couldn't check progress:", response);
+            console.log("Progress unknown... continuing anyway!");
+
+            setErrorCount(errorCount + 1);
+
+            if (errorCount >= 5) {
+              setError("Failed to generate video. Try again later.");
+              setStage("phoneInput");
+            }
+
+            return;
+          }
+
           const { status, result } = response.data;
+
           if (status === "FAILURE") {
             setError("Failed to generate video. Try again later.");
             setStage("phoneInput");
@@ -52,7 +69,7 @@ const VideoProcessor: React.FC<Props> = (props: Props) => {
         clearInterval(interval);
       }
     };
-  }, [taskId, setResult, setError, setStage]);
+  }, [taskId, setResult, setError, setStage, errorCount, setErrorCount]);
 
   return (
     <>

@@ -9,7 +9,7 @@ RUN pip install --no-cache-dir -r requirements/prod.txt
 
 RUN adduser --disabled-password --gecos '' thekid
 
-RUN chown -R thekid:thekid /app && chmod -R 775 /app
+RUN chown -R thekid:thekid /app && chmod -R 777 /app
 
 USER thekid
 

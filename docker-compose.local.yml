@@ -6,7 +6,7 @@ services:
       context: .
       dockerfile: Dockerfile
     volumes:
-      - ./videos:/app/exports
+      - ./exports:/app/exports
     user: thekid
     ports:
       - "5000:5000"
@@ -20,7 +20,7 @@ services:
       context: .
       dockerfile: Dockerfile
     volumes:
-      - ./videos:/app/exports
+      - ./exports:/app/exports
     user: thekid
     command: celery -A bereal.celery worker --loglevel=INFO --logfile=celery.log -E
     environment:

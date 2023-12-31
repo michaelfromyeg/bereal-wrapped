@@ -3,9 +3,10 @@ This script generates a slideshow from a folder of images and a music file.
 """
 import os
 from typing import Any, Generator
+import gc
 
 import librosa
-from moviepy.editor import AudioFileClip, ImageSequenceClip, concatenate_videoclips, vfx
+from moviepy.editor import AudioFileClip, ImageSequenceClip, VideoClip, concatenate_videoclips, vfx
 from PIL import Image, ImageDraw, ImageFont
 
 from .logger import logger
@@ -15,6 +16,7 @@ from .utils import (
     EXPORTS_PATH,
     FONT_BASE_PATH,
     IMAGE_EXTENSIONS,
+    IMAGE_QUALITY,
     Mode,
 )
 
@@ -46,11 +48,12 @@ def create_endcard(phone: str, year: str, n_images: int, font_size: int = 50, of
     draw.text((x, y), text, font=font, fill="white")
 
     encard_image_path = os.path.join(CONTENT_PATH, phone, year, "endcard.png")
-    img.save(encard_image_path)
+    img.save(encard_image_path, quality=IMAGE_QUALITY)
 
     return encard_image_path
 
 
+# deprecated, for now
 def create_slideshow(
     phone: str,
     year: str,
@@ -133,6 +136,124 @@ def create_slideshow(
     final_clip.write_videofile(output_file, codec="libx264", audio_codec="aac", threads=6, fps=24)
 
 
+BATCH_SIZE = 10
+
+
+def create_video_clip(image_path: str, timestamp: float) -> ImageSequenceClip:
+    """
+    Create a video clip from a single image.
+    """
+    return ImageSequenceClip([image_path], fps=1 / timestamp)
+
+
+def process_batch(image_paths: list[str], timestamps: list[float]) -> VideoClip | None:
+    """
+    Process a batch of images and create a concatenated video clip.
+    """
+    clips: list[ImageSequenceClip] = [
+        create_video_clip(path, timestamp) for path, timestamp in zip(image_paths, timestamps)
+    ]
+
+    if len(clips) == 0:
+        logger.warning("Empty batch; returning")
+        return None
+
+    vc = concatenate_videoclips(clips, method="compose")
+
+    clips.clear()
+    gc.collect()
+
+    return vc
+
+
+def create_slideshow2(
+    phone: str,
+    year: str,
+    input_folder: str,
+    output_file: str,
+    music_file: str | None,
+    timestamps: list[float],
+    mode: Mode = Mode.CLASSIC,
+) -> None:
+    """
+    Create a video slideshow from a target set of images.
+    """
+    if not os.path.isdir(input_folder):
+        raise ValueError("Input folder does not exist!")
+    if music_file is not None and not os.path.isfile(music_file):
+        raise ValueError("Music file does not exist!")
+
+    image_paths = sorted(
+        [
+            os.path.join(input_folder, f)
+            for f in os.listdir(input_folder)
+            if any(f.endswith(ext) for ext in IMAGE_EXTENSIONS)
+        ]
+    )
+
+    logger.info("Padded %d images with %d timestamps...", len(image_paths), len(timestamps))
+
+    if len(timestamps) < len(image_paths):
+        additional_needed = len(image_paths) - len(timestamps)
+
+        # Repeat the entire timestamps list as many times as needed
+        while additional_needed > 0:
+            timestamps.extend(timestamps[: min(len(timestamps), additional_needed)])
+            additional_needed = len(image_paths) - len(timestamps)
+
+    assert len(timestamps) >= len(image_paths)
+
+    logger.info("Padded %d images with %d timestamps...", len(image_paths), len(timestamps))
+
+    n_images = len(image_paths)
+    all_clips: list[VideoClip] = []
+    for i in range(0, n_images, BATCH_SIZE):
+        logger.info("Processing batch %d of %d", i // BATCH_SIZE, n_images // BATCH_SIZE)
+        logger.info("Images %d to %d", i, min(n_images, i + BATCH_SIZE))
+
+        batch_images = image_paths[i : min(n_images, i + BATCH_SIZE)]
+        batch_timestamps = timestamps[i : min(n_images, i + BATCH_SIZE)]
+
+        clip = process_batch(batch_images, batch_timestamps)
+
+        if clip is not None:
+            all_clips.append(clip)
+
+    endcard_image_path = create_endcard(phone=phone, year=year, n_images=n_images)
+    endcard_clip = ImageSequenceClip([endcard_image_path], fps=1 / 3)
+    all_clips.append(endcard_clip)
+
+    if len(all_clips) == 0:
+        logger.warning("No values in `all_clips`; returning")
+        return None
+
+    final_clip = concatenate_videoclips(all_clips, method="compose")
+
+    all_clips.clear()
+    gc.collect()
+
+    if mode == Mode.CLASSIC:
+        final_clip = final_clip.fx(
+            vfx.accel_decel,
+            new_duration=30,
+        )
+
+    if music_file is not None:
+        music = AudioFileClip(music_file)
+        if music.duration < final_clip.duration:
+            # TODO(michaelfromyeg): implement silence padding! (or maybe repeat clip...)
+            raise NotImplementedError("Music is shorter than final clip, not supported")
+        else:
+            logger.info("Music is longer than final clip; clipping appropriately")
+            music = music.subclip(0, final_clip.duration)
+        music = music.audio_fadeout(3)
+        final_clip = final_clip.set_audio(music)
+
+    final_clip.write_videofile(output_file, codec="libx264", audio_codec="aac", threads=4, fps=24)
+
+    return None
+
+
 def convert_to_durations(timestamps: list[float]) -> list[float]:
     """
     Calculate durations between consecutive timestamps.
@@ -171,7 +292,7 @@ def build_slideshow(
     #     logger.info("Skipping 'build_slideshow' stage; already created!")
     #     return None
 
-    create_slideshow(
+    create_slideshow2(
         phone=phone,
         year=year,
         input_folder=image_folder,

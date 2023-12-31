@@ -2,6 +2,7 @@
 Celery stuff.
 """
 import os
+import gc
 from celery import Celery
 
 from .bereal import memories
@@ -49,6 +50,7 @@ def make_video(token: str, phone: str, year: str, song_path: str, mode: Mode) ->
         image_folder = create_images(phone, year)
     except Exception as e:
         logger.error("Failed to create images: %s", e)
+        gc.collect()
         raise e
 
     logger.info("Creating video %s from %s...", video_file, image_folder)
@@ -56,6 +58,7 @@ def make_video(token: str, phone: str, year: str, song_path: str, mode: Mode) ->
         build_slideshow(phone, year, image_folder, song_path, video_file, mode)
     except Exception as e:
         logger.error("Failed to build slideshow: %s", e)
+        gc.collect()
         raise e
 
     logger.info("Cleaning up images")

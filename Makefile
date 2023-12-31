@@ -6,19 +6,19 @@ client:
 
 build:
 	@echo "Building the server..."
-	@docker-compose build
+	@docker-compose -f docker-compose.local.yml build
 
 up:
 	@echo "Booting up the server..."
-	@docker-compose up -d
+	@docker-compose -f docker-compose.local.yml up -d
 
 down:
 	@echo "Shutting down the server..."
-	@docker-compose down
+	@docker-compose -f docker-compose.local.yml down
 
 kill:
 	@echo "Killing the server..."
-	@docker-compose kill
+	@docker-compose -f docker-compose.local.yml kill
 
 start-redis:
 	@echo "Booting up Redis..."

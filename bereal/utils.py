@@ -89,6 +89,7 @@ REDIS_PORT: str | None = os.getenv("REDIS_PORT") or config.get("bereal", "redis_
 REDIS_PORT = int(REDIS_PORT) if REDIS_PORT is not None else None
 
 TIMEOUT = config.getint("bereal", "timeout", fallback=10)
+IMAGE_QUALITY = config.getint("bereal", "image_quality", fallback=50)
 
 
 # Utility methods

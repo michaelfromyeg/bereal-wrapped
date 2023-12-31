@@ -14,6 +14,7 @@ services:
       - FLASK_APP=bereal.server
     depends_on:
       - redis
+    mem_limit: 500m
 
   celery:
     build:
@@ -22,12 +23,13 @@ services:
     volumes:
       - /mnt/videos:/app/exports
     user: thekid
-    command: celery -A bereal.celery worker --loglevel=INFO --logfile=celery.log -E
+    command: celery -A bereal.celery worker --loglevel=INFO --logfile=celery.log -E -c 1
     environment:
       - FLASK_APP=bereal.server
     depends_on:
       - web
       - redis
+    mem_limit: 3g
 
   redis:
     image: "redis:alpine"

@@ -1,6 +1,12 @@
 import React from "react";
 
-const Footer: React.FC = () => {
+interface Props {
+  version: string;
+}
+
+const Footer: React.FC<Props> = (props: Props) => {
+  const { version } = props;
+
   return (
     <footer className="text-center">
       <div className="flex justify-center items-center space-x-4">
@@ -14,6 +20,12 @@ const Footer: React.FC = () => {
         >
           GitHub
         </a>
+        {version && (
+          <>
+            <span>|</span>
+            <div className="mb-0">version {version}</div>
+          </>
+        )}
         {/*
           <span>|</span>
           <a

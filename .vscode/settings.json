@@ -5,7 +5,7 @@
   },
   "files.associations": {
     "CNAME": "plaintext",
-    "*.yml": "yml",
+    "*.yml": "yaml",
   },
   "files.insertFinalNewline": true,
   "editor.formatOnSave": true,

@@ -208,6 +208,25 @@ const Footer: React.FC = () => {
     }
   };
 
+  const handleKeyDown = (event: any) => {
+    if (event.key === "Enter") {
+      event.preventDefault();
+      switch (stage) {
+        case "phoneInput":
+          handlePhoneSubmit();
+          break;
+        case "otpInput":
+          handleOtpSubmit();
+          break;
+        case "settings":
+          handleSettingsSubmit();
+          break;
+        default:
+          break;
+      }
+    }
+  };
+
   return (
     <div className="flex flex-col items-center justify-center p-8 bg-white rounded-lg shadow-md max-w-md w-full mx-auto my-6">
       <h1 className="text-4xl font-bold text-center mb-3">BeReal. Recap.</h1>
@@ -237,6 +256,7 @@ const Footer: React.FC = () => {
               placeholder="Phone Number"
               value={phoneNumber}
               onChange={(e) => setPhoneNumber(e.target.value)}
+              onKeyDown={handleKeyDown}
             />
             <button
               className="w-full py-2 mb-4 text-white bg-blue-500 rounded-md hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
@@ -262,6 +282,7 @@ const Footer: React.FC = () => {
               placeholder="OTP"
               value={otpCode}
               onChange={(e) => setOtpCode(e.target.value)}
+              onKeyDown={handleKeyDown}
             />
             <button
               className="w-full py-2 mb-4 text-white bg-blue-500 rounded-md hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"

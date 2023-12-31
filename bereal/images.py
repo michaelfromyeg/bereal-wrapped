@@ -7,7 +7,7 @@ import shutil
 from PIL import Image, ImageChops, ImageDraw, ImageFont
 
 from .logger import logger
-from .utils import CONTENT_PATH, FONT_BASE_PATH, OUTLINE_PATH
+from .utils import CONTENT_PATH, FONT_BASE_PATH, OUTLINE_PATH, IMAGE_QUALITY
 
 
 def process_image(
@@ -87,7 +87,7 @@ def process_image(
 
     # Save the result in the output folder
     output_path = os.path.join(output_folder, f"combined_{primary_filename}")
-    primary_image.save(output_path)
+    primary_image.save(output_path, quality=IMAGE_QUALITY)
 
     logger.debug("Combined image saved at %s", output_path)
 
