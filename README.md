@@ -140,6 +140,8 @@ Opted for Digital Ocean. Cheap, easy, and supports `docker-compose`.
 * [x] Better phone number support (start with CLI)
 * [ ] Move files to cloud storage (e.g., AWS)
 * [ ] Handle 443s everywhere
+* [ ] Video endpoint needs to validate some kind of token (or implement proper sessions)
+* [ ] Rate-limit all endpoints
 
 ## Remarks
 
