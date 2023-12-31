@@ -206,6 +206,11 @@ def get_video(filename: str) -> tuple[Response, int]:
     return send_from_directory(EXPORTS_PATH, filename, mimetype="video/mp4"), 200
 
 
+@app.route("/robots.txt")
+def robots_txt() -> tuple[Response, int]:
+    return send_from_directory(app.static_folder, request.path[1:]), 200
+
+
 @app.route("/favicon.ico")
 def favicon():
     return send_from_directory(app.static_folder, "favicon.ico", mimetype="image/vnd.microsoft.icon")
