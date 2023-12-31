@@ -45,13 +45,25 @@ def make_video(token: str, phone: str, year: str, song_path: str, mode: Mode) ->
 
     # TODO(michaelfromyeg): implement better error handling, everywhere
     logger.info("Creating images for %s...", video_file)
-    image_folder = create_images(phone, year)
+    try:
+        image_folder = create_images(phone, year)
+    except Exception as e:
+        logger.error("Failed to create images: %s", e)
+        raise e
 
     logger.info("Creating video %s from %s...", video_file, image_folder)
-    build_slideshow(phone, year, image_folder, song_path, video_file, mode)
+    try:
+        build_slideshow(phone, year, image_folder, song_path, video_file, mode)
+    except Exception as e:
+        logger.error("Failed to build slideshow: %s", e)
+        raise e
 
     logger.info("Cleaning up images")
-    cleanup_images(phone, year)
+    try:
+        cleanup_images(phone, year)
+    except Exception as e:
+        logger.error("Failed to clean up images: %s", e)
+        pass
 
     logger.info("Returning %s...", video_file)
     return video_file

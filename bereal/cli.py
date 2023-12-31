@@ -184,7 +184,14 @@ def step(idx: int, retval: dict[str, Any] | None) -> dict[str, Any] | None:
             short_token = retval["token"][:10]
             video_file = f"{short_token}-{retval['phone']}-{retval['year']}.mp4"
 
-            build_slideshow(retval["image_folder"], retval["song_path"], video_file, retval["mode"])
+            build_slideshow(
+                phone=retval["phone"],
+                year=retval["year"],
+                image_folder=retval["image_folder"],
+                song_path=retval["song_path"],
+                filename=video_file,
+                mode=retval["mode"],
+            )
 
             # TODO(michaelfromyeg): delete images in production
             cleanup_images(retval["phone"], retval["year"])
