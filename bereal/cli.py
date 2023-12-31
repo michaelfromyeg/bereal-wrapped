@@ -216,6 +216,9 @@ def cli(args: argparse.Namespace) -> None:
         "edate": None,
         "song": args.song,
         "mode": str2mode(args.mode),
+        "year": args.year,
+        "image_folder": args.image_folder,
+        "song_path": args.song_path,
     }
 
     if retval and args.year:
@@ -244,6 +247,8 @@ if __name__ == "__main__":
     parser.add_argument("--year", type=str, default=None, help="The year to use")
     parser.add_argument("--song", type=str, default=None, help="The song to use")
     parser.add_argument("--mode", type=str, default=None, help="The mode to use")
+    parser.add_argument("--image_folder", type=str, default=None, help="The image folder to use")
+    parser.add_argument("--song_path", type=str, default=None, help="The song path to use")
 
     args = parser.parse_args()
 
