@@ -4,6 +4,9 @@ import axios from "axios";
 import { BASE_URL } from "../utils";
 
 interface Props {
+  phone: string;
+  berealToken: string;
+
   taskId: string;
   setResult: Function;
   setError: Function;
@@ -11,7 +14,7 @@ interface Props {
 }
 
 const VideoProcessor: React.FC<Props> = (props: Props) => {
-  const { taskId, setResult, setError, setStage } = props;
+  const { phone, berealToken, taskId, setResult, setError, setStage } = props;
 
   const [errorCount, setErrorCount] = useState<number>(0);
 
@@ -22,7 +25,19 @@ const VideoProcessor: React.FC<Props> = (props: Props) => {
     const checkProgress = async () => {
       if (taskId) {
         try {
-          const response = await axios.get(`${BASE_URL}/status/${taskId}`);
+          const response = await axios.get(`${BASE_URL}/status/${taskId}`, {
+            params: {
+              phone,
+              berealToken,
+            },
+          });
+
+          if (response.status === 401) {
+            setError("Please refresh the page and try again.");
+            setStage("phoneInput");
+            return;
+          }
+
           if (response.status > 299) {
             console.warn("Couldn't check progress:", response);
             console.log("Progress unknown... continuing anyway!");
@@ -61,7 +76,7 @@ const VideoProcessor: React.FC<Props> = (props: Props) => {
     if (taskId) {
       interval = setInterval(() => {
         checkProgress();
-      }, 10 * 1000);
+      }, 60 * 1000);
     }
 
     return () => {
@@ -69,7 +84,16 @@ const VideoProcessor: React.FC<Props> = (props: Props) => {
         clearInterval(interval);
       }
     };
-  }, [taskId, setResult, setError, setStage, errorCount, setErrorCount]);
+  }, [
+    phone,
+    berealToken,
+    taskId,
+    setResult,
+    setError,
+    setStage,
+    errorCount,
+    setErrorCount,
+  ]);
 
   return (
     <>

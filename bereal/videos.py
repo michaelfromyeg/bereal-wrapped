@@ -6,7 +6,13 @@ from typing import Any, Generator
 import gc
 
 import librosa
-from moviepy.editor import AudioFileClip, ImageSequenceClip, VideoClip, concatenate_videoclips, vfx
+
+from moviepy.audio.io.AudioFileClip import AudioFileClip
+from moviepy.video.compositing.concatenate import concatenate_videoclips
+from moviepy.video.fx import all as vfx
+from moviepy.video.io.ImageSequenceClip import ImageSequenceClip
+from moviepy.video.VideoClip import VideoClip
+
 from PIL import Image, ImageDraw, ImageFont
 
 from .logger import logger
@@ -254,6 +260,65 @@ def create_slideshow2(
     return None
 
 
+def create_slideshow3(
+    phone: str,
+    year: str,
+    input_folder: str,
+    output_file: str,
+    music_file: str | None,
+    timestamps: list[float],
+    mode: Mode = Mode.CLASSIC,
+) -> None:
+    """
+    Create a video slideshow from a target set of images.
+    """
+    logger.debug("Creating slideshow for %s, %s", phone, year)
+
+    if not os.path.isdir(input_folder):
+        raise ValueError("Input folder does not exist!")
+
+    if music_file is not None and not os.path.isfile(music_file):
+        raise ValueError("Music file does not exist!")
+
+    n_images = len(os.listdir(input_folder))
+    if len(timestamps) < n_images:
+        additional_needed = n_images - len(timestamps)
+
+        # Repeat the entire timestamps list as many times as needed
+        while additional_needed > 0:
+            timestamps.extend(timestamps[: min(len(timestamps), additional_needed)])
+            additional_needed = n_images - len(timestamps)
+
+    assert len(timestamps) >= n_images
+
+    main_clip = ImageSequenceClip(input_folder, durations=timestamps)
+
+    # TODO(michaelfromyeg): create this file right in the input_folder?
+    # intro_clip = ...
+
+    # endcard_image_path = create_endcard(phone=phone, year=year, n_images=n_images)
+    # endcard_clip = ImageSequenceClip([endcard_image_path], fps=1 / 3)
+
+    # main_clip = concatenate_videoclips([intro_clip, main_clip, endcard_clip], method="compose")
+
+    if mode == Mode.CLASSIC:
+        main_clip = main_clip.fx(vfx.accel_decel, new_duration=30)
+
+    music = AudioFileClip(music_file)
+    if music.duration < main_clip.duration:
+        # TODO(michaelfromyeg): implement silence padding! (or maybe repeat clip...)
+        raise NotImplementedError("Music is shorter than final clip, not supported")
+    else:
+        logger.info("Music is longer than final clip; clipping appropriately")
+        music = music.subclip(0, main_clip.duration)
+
+    main_clip = main_clip.set_audio(music)
+
+    main_clip.write_videofile(output_file, codec="libx264", audio_codec="aac", threads=4, fps=24)
+
+    return None
+
+
 def convert_to_durations(timestamps: list[float]) -> list[float]:
     """
     Calculate durations between consecutive timestamps.
@@ -292,7 +357,7 @@ def build_slideshow(
     #     logger.info("Skipping 'build_slideshow' stage; already created!")
     #     return None
 
-    create_slideshow2(
+    create_slideshow3(
         phone=phone,
         year=year,
         input_folder=image_folder,

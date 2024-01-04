@@ -9,6 +9,7 @@ from enum import StrEnum
 
 from dotenv import load_dotenv
 
+from .logger import logger
 
 # Environment variables
 load_dotenv()
@@ -87,6 +88,9 @@ PORT = int(PORT) if PORT is not None else None
 REDIS_HOST: str | None = os.getenv("REDIS_HOST") or config.get("bereal", "redis_host", fallback="redis")
 REDIS_PORT: str | None = os.getenv("REDIS_PORT") or config.get("bereal", "redis_port", fallback="6379")
 REDIS_PORT = int(REDIS_PORT) if REDIS_PORT is not None else None
+
+logger.info(f"REDIS_HOST: {REDIS_HOST}")
+logger.info(f"REDIS_PORT: {REDIS_PORT}")
 
 TIMEOUT = config.getint("bereal", "timeout", fallback=10)
 IMAGE_QUALITY = config.getint("bereal", "image_quality", fallback=50)

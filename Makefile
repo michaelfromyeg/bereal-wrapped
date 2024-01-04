@@ -12,6 +12,10 @@ up:
 	@echo "Booting up the server..."
 	@docker-compose -f docker-compose.local.yml up -d
 
+logs:
+	@echo "Showing the server logs..."
+	@docker-compose -f docker-compose.local.yml logs -f
+
 down:
 	@echo "Shutting down the server..."
 	@docker-compose -f docker-compose.local.yml down
@@ -22,11 +26,15 @@ kill:
 
 start-redis:
 	@echo "Booting up Redis..."
-	@redis-server /etc/redis/redis.conf
+	@redis-server
 
 check-redis:
 	@echo "Checking Redis..."
 	@redis-cli ping
+
+stop-redis:
+	@echo "Shutting down Redis..."
+	@redis-cli shutdown
 
 celery:
 	@echo "Booting up Celery..."

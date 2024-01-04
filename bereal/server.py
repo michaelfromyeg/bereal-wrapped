@@ -7,21 +7,25 @@ from gevent import monkey
 
 monkey.patch_all()
 
-import os
-import warnings
-from datetime import datetime, timedelta
-from typing import Any
+import os  # noqa: E402
+import secrets  # noqa: E402
+import warnings  # noqa: E402
+from datetime import datetime, timedelta  # noqa: E402
+from typing import Any  # noqa: E402
 
-from flask import Flask, Response, jsonify, request, send_from_directory
-from flask_apscheduler import APScheduler
-from flask_cors import CORS
-from flask_sqlalchemy import SQLAlchemy
-from itsdangerous import URLSafeTimedSerializer
+from flask import Flask, Response, jsonify, request, abort, send_from_directory  # noqa: E402
+from flask_apscheduler import APScheduler  # noqa: E402
+from flask_cors import CORS  # noqa: E402
+from flask_limiter import Limiter  # noqa: E402
+from flask_limiter.util import get_remote_address  # noqa: E402
+from flask_migrate import Migrate
+from flask_sqlalchemy import SQLAlchemy  # noqa: E402
+from itsdangerous import URLSafeTimedSerializer  # noqa: E402
 
-from .bereal import send_code, verify_code
-from .celery import bcelery, make_video
-from .logger import logger
-from .utils import (
+from .bereal import send_code, verify_code  # noqa: E402
+from .celery import bcelery, make_video  # noqa: E402
+from .logger import logger  # noqa: E402
+from .utils import (  # noqa: E402
     CONTENT_PATH,
     DEFAULT_SONG_PATH,
     EXPORTS_PATH,
@@ -38,6 +42,17 @@ from .utils import (
 warnings.filterwarnings("ignore", category=UserWarning, module="tzlocal")
 
 app = Flask(__name__)
+
+# start with strict rate limits, and tune later
+limiter = Limiter(
+    app=app,
+    key_func=get_remote_address,
+    storage_uri=f"redis://{REDIS_HOST}:{REDIS_PORT}/1",
+    storage_options={"socket_connect_timeout": 30},
+    strategy="fixed-window",
+    default_limits=["250 per day", "100 per hour", "5 per minute", "3 per second"],
+)
+
 serializer = URLSafeTimedSerializer(SECRET_KEY)
 
 logger.info("Running in %s mode", FLASK_ENV)
@@ -55,7 +70,9 @@ else:
 basedir = os.path.abspath(os.path.dirname(__file__))
 app.config["SQLALCHEMY_DATABASE_URI"] = f'sqlite:///{os.path.join(basedir, "tokens.db")}'
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
+
 db = SQLAlchemy(app)
+migrate = Migrate(app, db)
 
 scheduler = APScheduler()
 scheduler.init_app(app)
@@ -65,14 +82,16 @@ app.config["CELERY_BROKER_URL"] = f"redis://{REDIS_HOST}:{REDIS_PORT}/0"
 bcelery.conf.update(app.config)
 
 
-class PhoneToken(db.Model):
+class BerealToken(db.Model):
     id = db.Column(db.Integer, primary_key=True)
+
     phone = db.Column(db.String(50), unique=True, nullable=False)
-    token = db.Column(db.String(6), nullable=False)
+    bereal_token = db.Column(db.String(20), nullable=False)
+
     timestamp = db.Column(db.DateTime, default=datetime.utcnow)
 
     def __repr__(self) -> str:
-        return f"<Phone {self.phoe}>"
+        return f"<Phone {self.phone}>"
 
 
 # Create the table
@@ -97,8 +116,10 @@ def request_otp() -> tuple[Response, int]:
     Request an OTP code for a user.
     """
     data: dict[str, Any] = request.get_json()
+
     phone = data["phone"]
 
+    # TODO(michaelfromyeg): propogate errors better from underlying API
     otp_session = send_code(f"+{phone}")
 
     if otp_session is None:
@@ -118,19 +139,23 @@ def validate_otp() -> tuple[Response, int]:
     Validate the user's input and render the process page.
     """
     data: dict[str, Any] = request.get_json()
-    phone = data["phone"]
+
     otp_session = data["otp_session"]
-
     otp_code = data["otp_code"]
+    phone = data["phone"]
 
+    # TODO(michaelfromyeg): propogate errors better from underlying API
     token = verify_code(otp_session, otp_code)
 
     if token is None:
         return jsonify({"error": "Bad Request", "message": "Invalid verification code"}), 400
 
-    insert_token(phone, token)
+    # generate a custom app token; this we can safely save in our DB
+    bereal_token = secrets.token_urlsafe(20)
 
-    return jsonify({"token": token}), 200
+    insert_bereal_token(phone, bereal_token)
+
+    return jsonify({"bereal_token": bereal_token, "token": token}), 200
 
 
 @app.route("/video", methods=["POST"])
@@ -138,17 +163,17 @@ def create_video() -> tuple[Response, int]:
     """
     Process a user's input and render the preview page.
     """
-    phone = request.form["phone"]
+    phone = request.args.get("phone")
+    bereal_token = request.args.get("berealToken")
+
+    if not bereal_token or bereal_token != get_bereal_token(phone):
+        abort(401)
+
     token = request.form["token"]
-
-    if token != get_token(phone):
-        return jsonify({"error": "Bad Request", "message": "Invalid token"}), 400
-
     year = request.form["year"]
-
     wav_file = request.files.get("file", None)
-
     mode_str = request.form.get("mode")
+
     mode = str2mode(mode_str)
 
     song_folder = os.path.join(CONTENT_PATH, phone, year)
@@ -165,6 +190,8 @@ def create_video() -> tuple[Response, int]:
         song_path = DEFAULT_SONG_PATH
 
     logger.debug("Queueing video task...")
+
+    # TODO(michaelfromyeg): replace token with bereal_token
     task = make_video.delay(token, phone, year, song_path, mode)
 
     return jsonify({"taskId": task.id}), 202
@@ -172,6 +199,15 @@ def create_video() -> tuple[Response, int]:
 
 @app.route("/status/<task_id>", methods=["GET"])
 def task_status(task_id) -> tuple[Response, int]:
+    """
+    Get the task status.
+    """
+    phone = request.args.get("phone")
+    bereal_token = request.args.get("berealToken")
+
+    if not bereal_token or bereal_token != get_bereal_token(phone):
+        abort(401)
+
     task = make_video.AsyncResult(task_id)
 
     try:
@@ -202,7 +238,13 @@ def get_video(filename: str) -> tuple[Response, int]:
     """
     Serve a video file.
     """
-    logger.debug("Serving video file %s/%s...", EXPORTS_PATH, filename)
+    phone = request.args.get("phone")
+    bereal_token = request.args.get("berealToken")
+
+    if not bereal_token or bereal_token != get_bereal_token(phone):
+        abort(401)
+
+    logger.debug("Serving video file %s/%s to %s...", EXPORTS_PATH, filename, phone)
     return send_from_directory(EXPORTS_PATH, filename, mimetype="video/mp4"), 200
 
 
@@ -239,27 +281,30 @@ def internal_error(error) -> tuple[Response, int]:
     return jsonify({"error": "Internal Server Error", "message": "An internal server error occurred"}), 500
 
 
-def insert_token(phone: str, token: str) -> None:
+def insert_bereal_token(phone: str, bereal_token: str) -> None:
     """
     Insert a new token into the database.
     """
-    PhoneToken.query.filter_by(phone=phone).delete()
+    BerealToken.query.filter_by(phone=phone).delete()
 
-    new_token = PhoneToken(phone=phone, token=token)
+    new_token = BerealToken(phone=phone, bereal_token=bereal_token)
     db.session.add(new_token)
     db.session.commit()
 
     return None
 
 
-def get_token(phone: str) -> str | None:
+def get_bereal_token(phone: str | None) -> str | None:
     """
     Get a token from the database.
     """
-    entry = PhoneToken.query.filter_by(phone=phone).first()
+    if phone is None:
+        return None
+
+    entry = BerealToken.query.filter_by(phone=phone).first()
 
     if entry and (datetime.utcnow() - entry.timestamp) < timedelta(hours=24):
-        return entry.token
+        return entry.bereal_token
 
     return None
 
@@ -269,7 +314,7 @@ def delete_expired_tokens() -> None:
     Delete all expired tokens from the database.
     """
     expiration_time = datetime.utcnow() - timedelta(hours=24)
-    PhoneToken.query.filter(PhoneToken.timestamp < expiration_time).delete()
+    BerealToken.query.filter(BerealToken.timestamp < expiration_time).delete()
     db.session.commit()
 
     return None

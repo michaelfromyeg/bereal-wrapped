@@ -6,6 +6,8 @@
   "files.associations": {
     "CNAME": "plaintext",
     "*.yml": "yaml",
+    "README": "plaintext",
+    "*.mako": "python"
   },
   "files.insertFinalNewline": true,
   "editor.formatOnSave": true,

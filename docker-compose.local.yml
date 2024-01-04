@@ -4,7 +4,7 @@ services:
   web:
     build:
       context: .
-      dockerfile: Dockerfile
+      dockerfile: docker/Dockerfile.server
     volumes:
       - ./exports:/app/exports
     user: thekid
@@ -18,7 +18,7 @@ services:
   celery:
     build:
       context: .
-      dockerfile: Dockerfile
+      dockerfile: docker/Dockerfile.celery
     volumes:
       - ./exports:/app/exports
     user: thekid
@@ -28,6 +28,23 @@ services:
     depends_on:
       - web
       - redis
+
+  flower:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.flower
+    volumes:
+      - ./exports:/app/exports
+    user: thekid
+    ports:
+      - "5555:5555"
+    command: celery -A bereal.celery flower --address=0.0.0.0 --inspect --enable-events --loglevel=DEBUG --logfile=flower.log
+    environment:
+      - FLASK_APP=bereal.server
+    depends_on:
+      - web
+      - redis
+      - celery
 
   redis:
     image: "redis:alpine"

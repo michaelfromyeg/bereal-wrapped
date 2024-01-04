@@ -4,7 +4,7 @@ services:
   web:
     build:
       context: .
-      dockerfile: Dockerfile
+      dockerfile: docker/Dockerfile.server
     volumes:
       - /mnt/videos:/app/exports
     user: thekid
@@ -19,7 +19,7 @@ services:
   celery:
     build:
       context: .
-      dockerfile: Dockerfile
+      dockerfile: docker/Dockerfile.celery
     volumes:
       - /mnt/videos:/app/exports
     user: thekid
@@ -35,9 +35,12 @@ services:
     image: "redis:alpine"
     ports:
       - "6379:6379"
+    volumes:
+      - /etc/redis/redis.conf:/usr/local/etc/redis/redis.conf
+    command: redis-server /usr/local/etc/redis/redis.conf
 
   nginx:
-    image: nginx:alpine
+    image: "nginx:alpine"
     ports:
       - "80:80"
       - "443:443"

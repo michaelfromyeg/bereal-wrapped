@@ -1,0 +1,16 @@
+FROM python:3.11
+
+WORKDIR /app
+
+COPY . /app
+
+RUN pip install --upgrade pip
+RUN pip install --no-cache-dir -r requirements/prod.txt
+
+ENV FLASK_APP=bereal.server
+
+RUN adduser --disabled-password --gecos '' thekid
+RUN chown -R thekid:thekid /app && chmod -R 777 /app
+USER thekid
+
+CMD ["celery", "-A", "bereal.celery worker", "--loglevel=INFO", "--logfile=celery.log", "-E", "-c", "1"]

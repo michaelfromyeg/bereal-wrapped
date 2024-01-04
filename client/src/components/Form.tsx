@@ -18,10 +18,13 @@ type Stage =
   | "videoDisplay";
 
 interface Session {
-  otpSession: string;
-  token: string;
   countryCode: string;
   phoneNumber: string;
+
+  otpSession: string;
+
+  token: string;
+  berealToken: string;
 }
 
 interface Option {
@@ -35,7 +38,7 @@ const MODES: Options<Option> = [
     label: "Classic (30 seconds)",
   },
   {
-    value: "full",
+    value: "modern",
     label: "Full",
   },
 ];
@@ -56,16 +59,22 @@ const Footer: React.FC = () => {
   const [error, setError] = useState<any | null>(null);
 
   const [stage, setStage] = useState<Stage>("phoneInput");
+
   const [phoneNumber, setPhoneNumber] = useState<string>("");
   const [countryCode, setCountryCode] = useState<string>("");
+
   const [otpCode, setOtpCode] = useState<string>("");
   const [otpSession, setOtpSession] = useState<any | null>(null);
+
   const [token, setToken] = useState<string>("");
+  const [berealToken, setBerealToken] = useState<string>("");
+
   const [year, setYear] = useState<Option | null>(YEARS[0]);
   const [file, setFile] = useState<File | null>(null);
   const [mode, setMode] = useState<Option | null>(MODES[0]);
 
   const [taskId, setTaskId] = useState<string>("");
+
   const [videoFilename, setVideoFilename] = useState<string>("");
 
   const showErrorToast = (errorMessage: string) => {
@@ -117,6 +126,7 @@ const Footer: React.FC = () => {
 
   const handlePhoneSubmit = async () => {
     const session = localStorage.getItem("session");
+
     let sessionData: Session | null = session ? JSON.parse(session) : null;
 
     if (
@@ -128,7 +138,11 @@ const Footer: React.FC = () => {
       setPhoneNumber(sessionData.phoneNumber);
       setOtpSession(sessionData.otpSession);
 
+      setToken(sessionData.token);
+      setBerealToken(sessionData.berealToken);
+
       setStage("settings");
+
       return;
     }
 
@@ -153,18 +167,20 @@ const Footer: React.FC = () => {
     try {
       setLoading(true);
       const response = await axios.post(`${BASE_URL}/validate-otp`, {
-        phone: `${countryCode}${phoneNumber}`,
         otp_session: otpSession,
         otp_code: otpCode,
+        phone: `${countryCode}${phoneNumber}`,
       });
 
       setToken(response.data?.token);
+      setBerealToken(response.data?.bereal_token);
 
       const sessionData: Session = {
-        otpSession,
-        token: response.data?.token,
         countryCode,
         phoneNumber,
+        token: response.data?.token,
+        berealToken: response.data?.berealToken,
+        otpSession,
       };
 
       localStorage.setItem("session", JSON.stringify(sessionData));
@@ -179,9 +195,8 @@ const Footer: React.FC = () => {
 
   const handleSettingsSubmit = async () => {
     const formData = new FormData();
-    formData.append("phone", `${countryCode}${phoneNumber}`);
-    formData.append("token", token);
 
+    formData.append("token", token);
     formData.append("year", year?.value || "");
     formData.append("mode", mode?.value || "");
 
@@ -192,11 +207,22 @@ const Footer: React.FC = () => {
 
     try {
       setLoading(true);
+
       const response = await axios.post(`${BASE_URL}/video`, formData, {
         headers: {
           "Content-Type": "multipart/form-data",
         },
+        params: {
+          phone: `${countryCode}${phoneNumber}`,
+          berealToken,
+        },
       });
+
+      if (response.status === 401) {
+        showErrorToast("Please refresh the page and try again.");
+        setStage("phoneInput");
+        return;
+      }
 
       setTaskId(response.data?.taskId);
 
@@ -226,6 +252,8 @@ const Footer: React.FC = () => {
       }
     }
   };
+
+  const videoUrl = `${BASE_URL}/video/${videoFilename}?phone=${countryCode}${phoneNumber}&berealToken=${berealToken}`;
 
   return (
     <div className="flex flex-col items-center justify-center p-8 bg-white rounded-lg shadow-md max-w-md w-full mx-auto my-6">
@@ -346,6 +374,8 @@ const Footer: React.FC = () => {
         )}
         {stage === "processing" && (
           <Processing
+            phone={`${countryCode}${phoneNumber}`}
+            berealToken={berealToken}
             taskId={taskId}
             setResult={setVideoFilename}
             setError={setError}
@@ -364,9 +394,7 @@ const Footer: React.FC = () => {
             */}
             <button
               className="w-full py-2 mb-4 text-white bg-blue-500 rounded-md hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
-              onClick={() =>
-                (window.location.href = `${BASE_URL}/video/${videoFilename}`)
-              }
+              onClick={() => (window.location.href = videoUrl)}
             >
               Download Video
             </button>
