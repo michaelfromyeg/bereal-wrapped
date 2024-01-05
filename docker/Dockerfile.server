@@ -4,8 +4,7 @@ WORKDIR /app
 
 COPY . /app
 
-RUN apt-get update
-RUN apt-get install netcat
+RUN apt-get update && apt-get install -y netcat-openbsd
 
 RUN pip install --upgrade pip
 RUN pip install --no-cache-dir -r requirements/prod.txt
