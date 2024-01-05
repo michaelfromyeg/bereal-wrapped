@@ -4,8 +4,8 @@ WORKDIR /app
 
 COPY . /app
 
-RUN sudo apt-get update
-RUN sudo apt-get install netcat
+RUN apt-get update
+RUN apt-get install netcat
 
 RUN pip install --upgrade pip
 RUN pip install --no-cache-dir -r requirements/prod.txt
