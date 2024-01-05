@@ -18,7 +18,7 @@ from flask_apscheduler import APScheduler  # noqa: E402
 from flask_cors import CORS  # noqa: E402
 from flask_limiter import Limiter  # noqa: E402
 from flask_limiter.util import get_remote_address  # noqa: E402
-from flask_migrate import Migrate
+from flask_migrate import Migrate  # noqa: E402
 from flask_sqlalchemy import SQLAlchemy  # noqa: E402
 from itsdangerous import URLSafeTimedSerializer  # noqa: E402
 
