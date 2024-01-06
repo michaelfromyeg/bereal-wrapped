@@ -127,12 +127,8 @@ def create_slideshow(
     if music_file is not None:
         music = AudioFileClip(music_file)
         if music.duration < final_clip.duration:
-            # TODO(michaelfromyeg): implement silence padding! (or maybe repeat clip...)
-            raise NotImplementedError("Music is shorter than final clip, not supported")
-
-            # silence_duration = final_clip.duration - music.duration
-            # silence = AudioSegment.silent(duration=silence_duration * 1000)  # Duration in milliseconds
-            # music += silence  # Concatenate silence and audio
+            logger.warning("Music is shorter than final clip; looping music")
+            music = music.fx(vfx.loop, duration=final_clip.duration)
         else:
             logger.info("Music is longer than final clip; clipping appropriately")
             music = music.subclip(0, final_clip.duration)
