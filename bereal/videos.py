@@ -54,6 +54,8 @@ def create_endcard(phone: str, year: str, n_images: int, font_size: int = 50, of
     draw.text((x, y), text, font=font, fill="white")
 
     encard_image_path = os.path.join(CONTENT_PATH, phone, year, "endcard.png")
+
+    img = img.convert("RGB")
     img.save(encard_image_path, quality=IMAGE_QUALITY)
 
     return encard_image_path

@@ -87,6 +87,10 @@ def process_image(
 
     # Save the result in the output folder
     output_path = os.path.join(output_folder, f"combined_{primary_filename}")
+
+    # ensure the photo is jpg ready
+    primary_image = primary_image.convert("RGB")
+
     primary_image.save(output_path, quality=IMAGE_QUALITY)
 
     logger.debug("Combined image saved at %s", output_path)
