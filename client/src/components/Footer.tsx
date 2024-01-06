@@ -9,7 +9,7 @@ const Footer: React.FC<Props> = (props: Props) => {
 
   return (
     <footer className="text-center">
-      <div className="flex justify-center items-center space-x-4">
+      <div className="flex justify-center items-center space-x-1">
         <div className="mb-0">a project from Michael DeMarco</div>
         <span>|</span>
         <a
