@@ -1,14 +1,13 @@
 """
 Celery stuff.
 """
-import os
 import gc
 from celery import Celery
 
 from .bereal import memories
 from .images import create_images, cleanup_images
 from .videos import build_slideshow
-from .utils import Mode, REDIS_HOST, REDIS_PORT, year2dates, CONTENT_PATH, EXPORTS_PATH
+from .utils import Mode, REDIS_HOST, REDIS_PORT, year2dates
 from .logger import logger
 
 
@@ -28,11 +27,6 @@ def make_video(token: str, phone: str, year: str, song_path: str, mode: Mode) ->
     """
     Creating a video takes about ~15 min. This is a work-in-progress!
     """
-    logger.info("%s", CONTENT_PATH)
-    logger.info("%s", EXPORTS_PATH)
-
-    logger.info("%s", os.getcwd())
-
     logger.info("Starting make_video task; first, downloading images...")
 
     sdate, edate = year2dates(year)
