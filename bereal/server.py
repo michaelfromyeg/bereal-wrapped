@@ -103,6 +103,7 @@ with app.app_context():
 
 
 @app.route("/status")
+@limiter.exempt
 def status() -> Response:
     """
     Return the status of the server.
