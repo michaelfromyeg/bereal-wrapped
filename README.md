@@ -138,11 +138,12 @@ Opted for Digital Ocean. Cheap, easy, and supports `docker-compose`.
 * [ ] Show render progress on webpage
 * [x] Batching algorithm for videos
 * [x] Better phone number support (start with CLI)
-* [ ] Move files to cloud storage (e.g., AWS)
 * [ ] Handle 443s everywhere
-* [ ] Video endpoint needs to validate some kind of token (or implement proper sessions)
+* [x] Video endpoint needs to validate some kind of token (or implement proper sessions)
+* [ ] Delete videos after a certain period of time
 * [x] Rate-limit all endpoints
   * [ ] Tune rate limits per endpoint
+* [ ] Migrate to Docker Swarm
 
 ## Remarks
 
