@@ -7,7 +7,8 @@
     "CNAME": "plaintext",
     "*.yml": "yaml",
     "README": "plaintext",
-    "*.mako": "python"
+    "*.mako": "python",
+    "*.conf": "ini",
   },
   "files.insertFinalNewline": true,
   "editor.formatOnSave": true,
