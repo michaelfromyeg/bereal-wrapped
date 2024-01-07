@@ -57,9 +57,6 @@ serializer = URLSafeTimedSerializer(SECRET_KEY)
 
 logger.info("Running in %s mode", FLASK_ENV)
 
-logger.info("CONTENT_PATH: %s", CONTENT_PATH)
-logger.info("EXPORTS_PATH: %s", EXPORTS_PATH)
-
 if FLASK_ENV == "development":
     logger.info("Enabling CORS for development")
     CORS(app)

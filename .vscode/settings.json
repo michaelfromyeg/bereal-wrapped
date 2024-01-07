@@ -9,6 +9,7 @@
     "README": "plaintext",
     "*.mako": "python",
     "*.conf": "ini",
+    "*.rdb": "sql",
   },
   "files.insertFinalNewline": true,
   "editor.formatOnSave": true,

@@ -195,7 +195,7 @@ def create_slideshow2(
         ]
     )
 
-    logger.info("Padded %d images with %d timestamps...", len(image_paths), len(timestamps))
+    logger.info("Have %d images with %d timestamps...", len(image_paths), len(timestamps))
 
     if len(timestamps) < len(image_paths):
         additional_needed = len(image_paths) - len(timestamps)
@@ -304,8 +304,8 @@ def create_slideshow3(
 
     music = AudioFileClip(music_file)
     if music.duration < main_clip.duration:
-        # TODO(michaelfromyeg): implement silence padding! (or maybe repeat clip...)
-        raise NotImplementedError("Music is shorter than final clip, not supported")
+        logger.warning("Music is shorter than final clip; looping music")
+        music = music.fx(vfx.loop, duration=main_clip.duration)
     else:
         logger.info("Music is longer than final clip; clipping appropriately")
         music = music.subclip(0, main_clip.duration)

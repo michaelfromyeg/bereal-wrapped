@@ -1,16 +1,16 @@
-FROM python:3.11
+FROM python:3.11-slim
 
 WORKDIR /app
 
-COPY . /app
+COPY . .
 
-RUN pip install --upgrade pip
-RUN pip install --no-cache-dir -r requirements/prod.txt
+RUN pip install --upgrade pip && \
+    pip install --no-cache-dir -r requirements/prod.txt && \
+    adduser --disabled-password --gecos '' thekid && \
+    chown -R thekid:thekid /app
+
+USER thekid
 
 ENV FLASK_APP=bereal.server
-
-RUN adduser --disabled-password --gecos '' thekid
-RUN chown -R thekid:thekid /app && chmod -R 777 /app
-USER thekid
 
 CMD ["celery", "-A", "bereal.celery", "flower", "--address=0.0.0.0", "--inspect", "--enable-events", "--loglevel=DEBUG", --"logfile=flower.log"]
