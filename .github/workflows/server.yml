@@ -20,4 +20,4 @@ jobs:
 
     - name: Build and deploy project
       run: |
-        ssh -o "StrictHostKeyChecking=no" ${{ secrets.USER }}@${{ secrets.HOST }} "cd ~/bereal-wrapped && git reset --hard HEAD && git pull && docker-compose up --build -d"
+        ssh -o "StrictHostKeyChecking=no" ${{ secrets.USER }}@${{ secrets.HOST }} "cd ~/bereal-wrapped && git reset --hard HEAD && git pull && docker-compose up --build -d && docker-compose restart"
