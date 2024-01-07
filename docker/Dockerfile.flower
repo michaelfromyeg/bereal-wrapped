@@ -13,4 +13,4 @@ USER thekid
 
 ENV FLASK_APP=bereal.server
 
-CMD ["celery", "-A", "bereal.celery", "flower", "--address=0.0.0.0", "--inspect", "--enable-events", "--loglevel=DEBUG", --"logfile=flower.log"]
+CMD ["celery", "-A", "bereal.celery flower", "--address=0.0.0.0", "--inspect", "--enable-events", "--loglevel=DEBUG", --"logfile=flower.log"]

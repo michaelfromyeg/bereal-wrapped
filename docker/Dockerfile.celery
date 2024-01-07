@@ -13,4 +13,4 @@ USER thekid
 
 ENV FLASK_APP=bereal.server
 
-CMD ["celery", "-A", "bereal.celery", "worker", "--loglevel=INFO", "--logfile=celery.log", "-E", "-c", "1"]
+CMD ["celery", "-A", "bereal.celery worker", "--loglevel=INFO", "--logfile=celery.log", "-E", "-c", "1"]
