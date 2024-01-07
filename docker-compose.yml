@@ -45,6 +45,7 @@ services:
     volumes:
       - ./nginx:/etc/nginx/conf.d
       - ./nginx/robots.txt:/usr/share/nginx/html/robots.txt
+      - /var/log/nginx:/var/log/nginx
       - /etc/letsencrypt:/etc/letsencrypt
     depends_on:
       - web
