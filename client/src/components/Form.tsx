@@ -81,7 +81,7 @@ const Footer: React.FC = () => {
   const [token, setToken] = useState<string>("");
   const [berealToken, setBerealToken] = useState<string>("");
 
-  const [year, setYear] = useState<Option | null>(YEARS[0]);
+  const [year, setYear] = useState<Option | null>(YEARS[1]);
   const [file, setFile] = useState<File | null>(null);
   const [mode, setMode] = useState<Option | null>(MODES[0]);
 
