@@ -271,7 +271,7 @@ const Footer: React.FC = () => {
     <div className="flex flex-col items-center justify-center p-8 bg-white rounded-lg shadow-md max-w-md w-full mx-auto my-6">
       <h1 className="text-4xl font-bold text-center mb-3">BeReal. Recap.</h1>
       <p className="text-center max-w-sm mb-3">
-        Create a recap video of your BeReals for 2022 or 2023. Only users your
+        Create a recap video of your BeReals for 2022 or 2023. Only uses your
         phone number and does not store any information. Videos are deleted
         after 24 hours and only accessible by you!
       </p>
