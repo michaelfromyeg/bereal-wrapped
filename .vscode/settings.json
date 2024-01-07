@@ -10,6 +10,7 @@
     "*.mako": "python",
     "*.conf": "ini",
     "*.rdb": "sql",
+    "*.local": "plaintext"
   },
   "files.insertFinalNewline": true,
   "editor.formatOnSave": true,
