@@ -321,10 +321,44 @@ def delete_expired_tokens() -> None:
     return None
 
 
-@scheduler.task("interval", id="delete_expired", hours=1, misfire_grace_time=900)
-def scheduled_task():
+def delete_old_videos() -> None:
+    """
+    Delete videos that are more than a day old.
+    """
+    time_limit = datetime.now() - timedelta(days=1)
+
+    for filename in os.listdir(EXPORTS_PATH):
+        file_path = os.path.join(EXPORTS_PATH, filename)
+
+        if os.path.isfile(file_path):
+            file_mod_time = datetime.fromtimestamp(os.path.getmtime(file_path))
+
+            if file_mod_time < time_limit:
+                try:
+                    os.remove(file_path)
+                    logger.info("Deleted video file %s", file_path)
+                except Exception as error:
+                    logger.warning("Could not delete video file %s: %s", file_path, error)
+
+    return None
+
+
+@scheduler.task("interval", id="delete_expired_tokens", hours=1, misfire_grace_time=900)
+def scheduled_token_task() -> None:
+    """
+    Schedule the token task.
+    """
     with app.app_context():
         delete_expired_tokens()
+
+
+@scheduler.task("interval", id="delete_old_videos", hours=12, misfire_grace_time=900)
+def scheduled_video_task() -> None:
+    """
+    Schedule the video task.
+    """
+    with app.app_context():
+        delete_old_videos()
 
 
 if __name__ == "__main__":
