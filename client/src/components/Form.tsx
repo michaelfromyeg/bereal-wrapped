@@ -259,13 +259,13 @@ const Footer: React.FC = () => {
     <div className="flex flex-col items-center justify-center p-8 bg-white rounded-lg shadow-md max-w-md w-full mx-auto my-6">
       <h1 className="text-4xl font-bold text-center mb-3">BeReal. Recap.</h1>
       <p className="text-center max-w-sm mb-3">
-        Create a 2022-style recap for 2022 or 2023. Needs your phone number.
-        More information on GitHub.
+        Create a recap video of your BeReals for 2022 or 2023. Only users your
+        phone number and does not store any information. Videos are deleted
+        after 24 hours and only accessible by you!
       </p>
       <p className="text-center max-w-sm mb-6">
-        The app is admittedly a bit flakey, so try to follow instructions
-        carefully, and if you get an error, refresh the page and try again. If
-        errors persist, feel free to make an issue on GitHub.
+        If you get an error, refresh the page and try again. If errors persist,
+        feel free to make an issue on GitHub.
       </p>
       <div className="w-full">
         {stage === "phoneInput" && (
@@ -275,13 +275,13 @@ const Footer: React.FC = () => {
               htmlFor="phoneNumber"
               className="block text-sm font-medium text-gray-700"
             >
-              Phone Number (e.g., 7801234567)
+              Phone Number
             </label>
             <input
               type="text"
               id="phoneNumber"
               className="block w-full p-2 mt-1 mb-4 border border-gray-300 rounded-md"
-              placeholder="Phone Number"
+              placeholder="e.g., 7806809634"
               value={phoneNumber}
               onChange={(e) => setPhoneNumber(e.target.value)}
               onKeyDown={handleKeyDown}
@@ -291,7 +291,7 @@ const Footer: React.FC = () => {
               onClick={handlePhoneSubmit}
               disabled={loading}
             >
-              Send OTP
+              Send verification code
             </button>
           </>
         )}
@@ -301,7 +301,7 @@ const Footer: React.FC = () => {
               htmlFor="otpCode"
               className="block text-sm font-medium text-gray-700"
             >
-              One-Time Password (e.g., 123456)
+              Verification Code (e.g., 123456)
             </label>
             <input
               className="block w-full p-2 mt-1 mb-4 border border-gray-300 rounded-md"
@@ -317,7 +317,7 @@ const Footer: React.FC = () => {
               onClick={handleOtpSubmit}
               disabled={loading}
             >
-              Validate OTP
+              Validate verification code
             </button>
           </>
         )}
@@ -396,7 +396,7 @@ const Footer: React.FC = () => {
               className="w-full py-2 mb-4 text-white bg-blue-500 rounded-md hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
               onClick={() => (window.location.href = videoUrl)}
             >
-              Download Video
+              Download your video
             </button>
           </>
         )}
