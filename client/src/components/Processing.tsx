@@ -98,16 +98,16 @@ const VideoProcessor: React.FC<Props> = (props: Props) => {
   return (
     <>
       {taskId ? (
-        <>
-          <p className="text-center">
+        <div>
+          <p className="text-center max-w-sm mb-6">
             Videos take around 10 minutes to generate. A download button will
             appear when ready, and you'll also receive a text message with the
             link.
           </p>
-          <p className="text-center">Processing...</p>
-        </>
+          <p className="text-center mb-6">Processing...</p>
+        </div>
       ) : (
-        <p className="text-center">
+        <p className="text-center mb-6">
           No task ID available. Refresh the page to try again.
         </p>
       )}

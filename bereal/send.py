@@ -16,7 +16,7 @@ def sms(phone: str, link: str) -> None:
     try:
         client = Client(TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN)
 
-        message_body = f"Here is the link to your BeReal Wrapped!\n{link}"
+        message_body = f"Here is the link to your BeReal Wrapped!\n\n{link}"
         message = client.messages.create(body=message_body, from_=TWILIO_PHONE_NUMBER, to=phone)
 
         logger.info("Sent message to %s: %s", phone, message.sid)
