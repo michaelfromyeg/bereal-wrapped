@@ -1,0 +1,25 @@
+"""
+Send messages to the user.
+
+For now, only phone. Eventually, consider e-mail.
+"""
+from .utils import TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN, TWILIO_PHONE_NUMBER
+from .logger import logger
+
+from twilio.rest import Client
+
+
+def sms(phone: str, link: str) -> None:
+    """
+    Send a link to the user's phone number.
+    """
+    try:
+        client = Client(TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN)
+
+        message_body = f"Here is the link to your BeReal Wrapped!\n{link}"
+        message = client.messages.create(body=message_body, from_=TWILIO_PHONE_NUMBER, to=phone)
+
+        logger.info("Sent message to %s: %s", phone, message.sid)
+    except Exception as e:
+        logger.error("Failed to send SMS: %s", e)
+        pass

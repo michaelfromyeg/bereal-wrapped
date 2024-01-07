@@ -193,7 +193,7 @@ def create_video() -> tuple[Response, int]:
     logger.debug("Queueing video task...")
 
     # TODO(michaelfromyeg): replace token with bereal_token
-    task = make_video.delay(token, phone, year, song_path, mode)
+    task = make_video.delay(token, bereal_token, phone, year, song_path, mode)
 
     return jsonify({"taskId": task.id}), 202
 

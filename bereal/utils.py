@@ -20,6 +20,13 @@ FLASK_ENV = os.getenv("FLASK_ENV") or "production"
 if SECRET_KEY == "SECRET_KEY":
     raise ValueError("SECRET_KEY environment variable not set or non-unique")
 
+TWILIO_PHONE_NUMBER = os.getenv("TWILIO_PHONE_NUMBER")
+TWILIO_AUTH_TOKEN = os.getenv("TWILIO_AUTH_TOKEN")
+TWILIO_ACCOUNT_SID = os.getenv("TWILIO_ACCOUNT_SID")
+
+if TWILIO_PHONE_NUMBER is None or TWILIO_AUTH_TOKEN is None or TWILIO_ACCOUNT_SID is None:
+    raise ValueError("TWILIO environment variables not set")
+
 # Global constants
 BASE_URL = "https://berealapi.fly.dev"
 
@@ -84,6 +91,8 @@ config.read("config.ini")
 HOST: str | None = os.getenv("HOST") or config.get("bereal", "host", fallback="localhost")
 PORT: str | None = os.getenv("PORT") or config.get("bereal", "port", fallback="5000")
 PORT = int(PORT) if PORT is not None else None
+
+TRUE_HOST = f"http://{HOST}:{PORT}" if FLASK_ENV == "development" else "https://api.bereal.michaeldemar.co"
 
 REDIS_HOST: str | None = os.getenv("REDIS_HOST") or config.get("bereal", "redis_host", fallback="redis")
 REDIS_PORT: str | None = os.getenv("REDIS_PORT") or config.get("bereal", "redis_port", fallback="6379")

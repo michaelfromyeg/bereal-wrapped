@@ -7,7 +7,8 @@ from celery import Celery
 from .bereal import memories
 from .images import create_images, cleanup_images
 from .videos import build_slideshow
-from .utils import Mode, REDIS_HOST, REDIS_PORT, year2dates
+from .utils import Mode, REDIS_HOST, REDIS_PORT, TRUE_HOST, year2dates
+from .send import sms
 from .logger import logger
 
 
@@ -23,9 +24,11 @@ bcelery = make_celery()
 
 
 @bcelery.task(time_limit=1200)
-def make_video(token: str, phone: str, year: str, song_path: str, mode: Mode) -> str:
+def make_video(token: str, bereal_token: str, phone: str, year: str, song_path: str, mode: Mode) -> str:
     """
     Creating a video takes about ~15 min. This is a work-in-progress!
+
+    TODO(michaelfromyeg): handle errors more gracefully; better logging.
     """
     logger.info("Starting make_video task; first, downloading images...")
 
@@ -35,10 +38,9 @@ def make_video(token: str, phone: str, year: str, song_path: str, mode: Mode) ->
     if not result:
         raise Exception("Could not generate memories; try again later")
 
-    short_token = token[:10]
-    video_file = f"{short_token}-{phone}-{year}.mp4"
+    short_bereal_token = bereal_token[:10]
+    video_file = f"{short_bereal_token}-{phone}-{year}.mp4"
 
-    # TODO(michaelfromyeg): implement better error handling, everywhere
     logger.info("Creating images for %s...", video_file)
     try:
         image_folder = create_images(phone, year)
@@ -54,6 +56,9 @@ def make_video(token: str, phone: str, year: str, song_path: str, mode: Mode) ->
         logger.error("Failed to build slideshow: %s", e)
         gc.collect()
         raise e
+
+    video_url = f"{TRUE_HOST}/video/{video_file}?phone={phone}&berealToken={bereal_token}"
+    sms(f"+{phone}", video_url)
 
     logger.info("Cleaning up images")
     try:
