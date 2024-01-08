@@ -13,7 +13,7 @@ import warnings  # noqa: E402
 from datetime import datetime, timedelta  # noqa: E402
 from typing import Any  # noqa: E402
 
-from flask import Flask, Response, jsonify, request, abort, send_from_directory  # noqa: E402
+from flask import Flask, Response, jsonify, request, send_from_directory  # noqa: E402
 from flask_apscheduler import APScheduler  # noqa: E402
 from flask_cors import CORS  # noqa: E402
 from flask_limiter import Limiter  # noqa: E402
@@ -165,7 +165,7 @@ def create_video() -> tuple[Response, int]:
     bereal_token = request.args.get("berealToken")
 
     if not bereal_token or bereal_token != get_bereal_token(phone):
-        abort(401)
+        return jsonify({"error": "Unauthorized", "message": "Invalid token"}), 401
 
     token = request.form["token"]
     year = request.form["year"]
@@ -204,7 +204,7 @@ def task_status(task_id) -> tuple[Response, int]:
     bereal_token = request.args.get("berealToken")
 
     if not bereal_token or bereal_token != get_bereal_token(phone):
-        abort(401)
+        return jsonify({"error": "Unauthorized", "message": "Invalid token"}), 401
 
     task = make_video.AsyncResult(task_id)
 
@@ -232,6 +232,7 @@ def task_status(task_id) -> tuple[Response, int]:
 
 
 @app.route("/video/<filename>", methods=["GET"])
+@limiter.exempt
 def get_video(filename: str) -> tuple[Response, int]:
     """
     Serve a video file.
@@ -240,7 +241,7 @@ def get_video(filename: str) -> tuple[Response, int]:
     bereal_token = request.args.get("berealToken")
 
     if not bereal_token or bereal_token != get_bereal_token(phone):
-        abort(401)
+        return jsonify({"error": "Unauthorized", "message": "Invalid token"}), 401
 
     logger.debug("Serving video file %s/%s to %s...", EXPORTS_PATH, filename, phone)
     return send_from_directory(EXPORTS_PATH, filename, mimetype="video/mp4"), 200
