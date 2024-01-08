@@ -244,7 +244,7 @@ def get_video(filename: str) -> tuple[Response, int]:
         return jsonify({"error": "Unauthorized", "message": "Invalid token"}), 401
 
     logger.debug("Serving video file %s/%s to %s...", EXPORTS_PATH, filename, phone)
-    return send_from_directory(EXPORTS_PATH, filename, mimetype="video/mp4"), 200
+    return send_from_directory(EXPORTS_PATH, filename, mimetype="video/mp4", as_attachment=True), 200
 
 
 @app.route("/robots.txt")
