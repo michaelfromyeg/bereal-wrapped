@@ -9,6 +9,7 @@ from enum import StrEnum
 
 from dotenv import load_dotenv
 
+from .logger import logger
 
 # Environment variables
 load_dotenv()
@@ -104,14 +105,18 @@ IMAGE_QUALITY = config.getint("bereal", "image_quality", fallback=50)
 # Utility methods
 def get_git_commit_hash() -> str:
     try:
-        if not os.path.isdir(".git"):
+        git_path = os.path.join(CWD, ".git")
+        if not os.path.isdir(git_path):
+            logger.warning("Unable to get git commit hash, expected %s to be available", git_path)
             return "unknown"
 
         commit_hash = subprocess.check_output(["git", "rev-parse", "--short", "HEAD"]).strip()
         return commit_hash.decode("utf-8")
-    except subprocess.CalledProcessError:
+    except subprocess.CalledProcessError as e:
+        logger.warning("Unable to get git commit hash, got CalledProcessError: %s", e)
         return "unknown"
-    except Exception:
+    except Exception as e:
+        logger.warning("Unable to get git commit hash, got Exception: %s", e)
         return "unknown"
 
 

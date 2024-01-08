@@ -104,10 +104,10 @@ const VideoProcessor: React.FC<Props> = (props: Props) => {
             appear when ready, and you'll also receive a text message with the
             link.
           </p>
-          <p className="text-center mb-6">Processing...</p>
+          <p className="text-blue-500 text-center mb-6">Processing...</p>
         </div>
       ) : (
-        <p className="text-center mb-6">
+        <p className="text-red-500 text-center mb-6">
           No task ID available. Refresh the page to try again.
         </p>
       )}

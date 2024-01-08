@@ -1,12 +1,13 @@
 import React, { useEffect, useState } from "react";
-import Select, { Options } from "react-select";
 import { toast } from "react-toastify";
 import axios from "axios";
 
-import CountryCode from "./CountryCode";
+import PhoneInput from "./PhoneInput";
 import Processing from "./Processing";
 
-import { BASE_URL } from "../utils";
+import { BASE_URL, Option, YEARS, MODES } from "../utils";
+import OtpInput from "./OtpInput";
+import Settings from "./Settings";
 
 axios.defaults.withCredentials = true;
 
@@ -27,47 +28,7 @@ interface Session {
   berealToken: string;
 }
 
-interface Option {
-  value: string;
-  label: string;
-}
-
-const MODES: Options<Option> = [
-  {
-    value: "classic",
-    label: "Classic (30 seconds)",
-  },
-  {
-    value: "modern",
-    label: "Full",
-  },
-];
-
-const YEARS: Options<Option> = [
-  {
-    value: "2024",
-    label: "2024",
-  },
-  {
-    value: "2023",
-    label: "2023",
-  },
-  {
-    value: "2022",
-    label: "2022",
-  },
-  {
-    value: "2021",
-    label: "2021",
-  },
-  {
-    value: "2020",
-    label: "2020",
-  },
-];
-
-const Footer: React.FC = () => {
-  const [loading, setLoading] = useState<boolean>(false);
+const Form: React.FC = () => {
   const [error, setError] = useState<any | null>(null);
 
   const [stage, setStage] = useState<Stage>("phoneInput");
@@ -138,7 +99,6 @@ const Footer: React.FC = () => {
 
   const handlePhoneSubmit = async () => {
     const session = localStorage.getItem("session");
-
     let sessionData: Session | null = session ? JSON.parse(session) : null;
 
     if (
@@ -158,10 +118,9 @@ const Footer: React.FC = () => {
       return;
     }
 
-    setLoading(true);
-    localStorage.removeItem("session");
-
     try {
+      localStorage.removeItem("session");
+
       const response = await axios.post(`${BASE_URL}/request-otp`, {
         phone: `${countryCode}${phoneNumber}`,
       });
@@ -170,14 +129,11 @@ const Footer: React.FC = () => {
       setStage("otpInput");
     } catch (error) {
       console.error("Error sending OTP:", error);
-    } finally {
-      setLoading(false);
     }
   };
 
   const handleOtpSubmit = async () => {
     try {
-      setLoading(true);
       const response = await axios.post(`${BASE_URL}/validate-otp`, {
         otp_session: otpSession,
         otp_code: otpCode,
@@ -200,8 +156,6 @@ const Footer: React.FC = () => {
       setStage("settings");
     } catch (error) {
       console.error("Error validating OTP:", error);
-    } finally {
-      setLoading(false);
     }
   };
 
@@ -218,8 +172,6 @@ const Footer: React.FC = () => {
     }
 
     try {
-      setLoading(true);
-
       const response = await axios.post(`${BASE_URL}/video`, formData, {
         headers: {
           "Content-Type": "multipart/form-data",
@@ -241,8 +193,6 @@ const Footer: React.FC = () => {
       setStage("processing");
     } catch (error) {
       console.error("Error submitting settings:", error);
-    } finally {
-      setLoading(false);
     }
   };
 
@@ -281,108 +231,32 @@ const Footer: React.FC = () => {
       </p>
       <div className="w-full">
         {stage === "phoneInput" && (
-          <>
-            <CountryCode setCountryCode={setCountryCode} />
-            <label
-              htmlFor="phoneNumber"
-              className="block text-sm font-medium text-gray-700"
-            >
-              Phone Number
-            </label>
-            <input
-              type="text"
-              id="phoneNumber"
-              className="block w-full p-2 mt-1 mb-4 border border-gray-300 rounded-md"
-              placeholder="e.g., 7806809634"
-              value={phoneNumber}
-              onChange={(e) => setPhoneNumber(e.target.value)}
-              onKeyDown={handleKeyDown}
-            />
-            <button
-              className="w-full py-2 mb-4 text-white bg-blue-500 rounded-md hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
-              onClick={handlePhoneSubmit}
-              disabled={loading}
-            >
-              Send verification code
-            </button>
-          </>
+          <PhoneInput
+            setCountryCode={setCountryCode}
+            setPhoneNumber={setPhoneNumber}
+            phoneNumber={phoneNumber}
+            handlePhoneSubmit={handlePhoneSubmit}
+            handleKeyDown={handleKeyDown}
+          />
         )}
         {stage === "otpInput" && (
-          <>
-            <label
-              htmlFor="otpCode"
-              className="block text-sm font-medium text-gray-700"
-            >
-              Verification Code (e.g., 123456)
-            </label>
-            <input
-              className="block w-full p-2 mt-1 mb-4 border border-gray-300 rounded-md"
-              type="text"
-              id="otpCode"
-              placeholder="OTP"
-              value={otpCode}
-              onChange={(e) => setOtpCode(e.target.value)}
-              onKeyDown={handleKeyDown}
-            />
-            <button
-              className="w-full py-2 mb-4 text-white bg-blue-500 rounded-md hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
-              onClick={handleOtpSubmit}
-              disabled={loading}
-            >
-              Validate verification code
-            </button>
-          </>
+          <OtpInput
+            otpCode={otpCode}
+            setOtpCode={setOtpCode}
+            handleOtpSubmit={handleOtpSubmit}
+            handleKeyDown={handleKeyDown}
+          />
         )}
         {stage === "settings" && (
-          <>
-            <label
-              htmlFor="year"
-              className="block text-sm font-medium text-gray-700"
-            >
-              Year
-            </label>
-            <Select
-              id="year"
-              value={year}
-              onChange={(option) => setYear(option)}
-              options={YEARS}
-              className="basic-single mb-4"
-            />
-            <label
-              htmlFor="song"
-              className="block text-sm font-medium text-gray-700"
-            >
-              Song (if blank, there's a default song!)
-            </label>
-            <input
-              className="block w-full p-2 mt-1 mb-4 border border-gray-300 rounded-md"
-              type="file"
-              id="song"
-              accept=".wav"
-              onChange={(e) => setFile(e.target.files?.[0] ?? null)}
-            />
-            <label
-              htmlFor="mode"
-              className="block text-sm font-medium text-gray-700"
-            >
-              Mode
-            </label>
-            <Select
-              id="mode"
-              value={mode}
-              onChange={(option) => setMode(option)}
-              className="basic-single mb-4"
-              classNamePrefix="select"
-              options={MODES}
-            />
-            <button
-              className="w-full py-2 mb-4 text-white bg-blue-500 rounded-md hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
-              onClick={handleSettingsSubmit}
-              disabled={loading}
-            >
-              Submit
-            </button>
-          </>
+          <Settings
+            setYear={setYear}
+            setMode={setMode}
+            setFile={setFile}
+            handleSettingsSubmit={handleSettingsSubmit}
+            year={year}
+            mode={mode}
+            file={file}
+          />
         )}
         {stage === "processing" && (
           <Processing
@@ -404,12 +278,11 @@ const Footer: React.FC = () => {
                 should work though!
               </video>
             */}
-            <button
-              className="w-full py-2 mb-4 text-white bg-blue-500 rounded-md hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
-              onClick={() => (window.location.href = videoUrl)}
-            >
-              Download your video
-            </button>
+            <a href={videoUrl} download="recap.mp4">
+              <button className="w-full py-2 mb-4 text-white bg-blue-500 rounded-md hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed">
+                Download your video
+              </button>
+            </a>
           </>
         )}
       </div>
@@ -417,4 +290,4 @@ const Footer: React.FC = () => {
   );
 };
 
-export default Footer;
+export default Form;
