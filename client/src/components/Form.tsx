@@ -93,34 +93,34 @@ const Form: React.FC = () => {
       }
 
       showErrorToast(errorMessage);
-      localStorage.removeItem("session");
+      // localStorage.removeItem("session");
       setStage("phoneInput");
     }
   }, [error]);
 
   const handlePhoneSubmit = async () => {
-    const session = localStorage.getItem("session");
-    let sessionData: Session | null = session ? JSON.parse(session) : null;
+    // const session = localStorage.getItem("session");
+    // let sessionData: Session | null = session ? JSON.parse(session) : null;
 
-    if (
-      sessionData &&
-      sessionData.countryCode === countryCode &&
-      sessionData.phoneNumber === phoneNumber
-    ) {
-      setCountryCode(sessionData.countryCode);
-      setPhoneNumber(sessionData.phoneNumber);
-      setOtpSession(sessionData.otpSession);
+    // if (
+    //   sessionData &&
+    //   sessionData.countryCode === countryCode &&
+    //   sessionData.phoneNumber === phoneNumber
+    // ) {
+    //   setCountryCode(sessionData.countryCode);
+    //   setPhoneNumber(sessionData.phoneNumber);
+    //   setOtpSession(sessionData.otpSession);
 
-      setToken(sessionData.token);
-      setBerealToken(sessionData.berealToken);
+    //   setToken(sessionData.token);
+    //   setBerealToken(sessionData.berealToken);
 
-      setStage("settings");
+    //   setStage("settings");
 
-      return;
-    }
+    //   return;
+    // }
 
     try {
-      localStorage.removeItem("session");
+      // localStorage.removeItem("session");
 
       const response = await axios.post(`${BASE_URL}/request-otp`, {
         phone: `${countryCode}${phoneNumber}`,
@@ -144,15 +144,15 @@ const Form: React.FC = () => {
       setToken(response.data?.token);
       setBerealToken(response.data?.bereal_token);
 
-      const sessionData: Session = {
-        countryCode,
-        phoneNumber,
-        token: response.data?.token,
-        berealToken: response.data?.berealToken,
-        otpSession,
-      };
+      // const sessionData: Session = {
+      //   countryCode,
+      //   phoneNumber,
+      //   token: response.data?.token,
+      //   berealToken: response.data?.berealToken,
+      //   otpSession,
+      // };
 
-      localStorage.setItem("session", JSON.stringify(sessionData));
+      // localStorage.setItem("session", JSON.stringify(sessionData));
 
       setStage("settings");
     } catch (error) {
