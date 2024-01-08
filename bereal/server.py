@@ -50,7 +50,7 @@ limiter = Limiter(
     storage_uri=f"redis://{REDIS_HOST}:{REDIS_PORT}/1",
     storage_options={"socket_connect_timeout": 30},
     strategy="fixed-window",
-    default_limits=["250 per day", "100 per hour", "5 per minute", "3 per second"],
+    default_limits=["500 per day", "200 per hour", "20 per minute", "5 per second"],
 )
 
 serializer = URLSafeTimedSerializer(SECRET_KEY)
@@ -176,18 +176,21 @@ def create_video() -> tuple[Response, int]:
 
     song_folder = os.path.join(CONTENT_PATH, phone, year)
     os.makedirs(song_folder, exist_ok=True)
+
     song_path = os.path.join(song_folder, "song.wav")
 
     if wav_file:
-        logger.debug("Downloading music file %s...", wav_file.filename)
+        logger.info("Downloading music file %s...", wav_file.filename)
         try:
             wav_file.save(song_path)
         except Exception as error:
             logger.warning("Could not save music file, received: %s", error)
+            song_path = DEFAULT_SONG_PATH
     else:
+        logger.info("No music file provided; using default...")
         song_path = DEFAULT_SONG_PATH
 
-    logger.debug("Queueing video task...")
+    logger.info("Queueing video task...")
 
     # TODO(michaelfromyeg): replace token with bereal_token
     task = make_video.delay(token, bereal_token, phone, year, song_path, mode)
