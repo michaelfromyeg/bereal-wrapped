@@ -8,6 +8,7 @@ import Processing from "./Processing";
 import { BASE_URL, Option, YEARS, MODES } from "../utils";
 import OtpInput from "./OtpInput";
 import Settings from "./Settings";
+import Download from "./Download";
 
 axios.defaults.withCredentials = true;
 
@@ -278,11 +279,7 @@ const Form: React.FC = () => {
                 should work though!
               </video>
             */}
-            <a href={videoUrl} download="recap.mp4">
-              <button className="w-full py-2 mb-4 text-white bg-blue-500 rounded-md hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed">
-                Download your video
-              </button>
-            </a>
+            <Download href={videoUrl} />
           </>
         )}
       </div>
