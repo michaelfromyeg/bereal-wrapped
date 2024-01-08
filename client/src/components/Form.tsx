@@ -19,15 +19,15 @@ type Stage =
   | "processing"
   | "videoDisplay";
 
-interface Session {
-  countryCode: string;
-  phoneNumber: string;
+// interface Session {
+//   countryCode: string;
+//   phoneNumber: string;
 
-  otpSession: string;
+//   otpSession: string;
 
-  token: string;
-  berealToken: string;
-}
+//   token: string;
+//   berealToken: string;
+// }
 
 const Form: React.FC = () => {
   const [error, setError] = useState<any | null>(null);
