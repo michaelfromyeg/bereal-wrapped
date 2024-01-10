@@ -1,7 +1,8 @@
 import { useState } from "react";
 import Select from "react-select";
 
-import { Option, YEARS, MODES, MAX_FILE_SIZE } from "../utils";
+import { customStyles } from "./CountryCode";
+import { Option, YEARS, MODES, MAX_FILE_SIZE } from "../utils/constants";
 
 interface Props {
   setYear: React.Dispatch<React.SetStateAction<Option | null>>;
@@ -35,6 +36,7 @@ const Settings: React.FC<Props> = (props) => {
         await handleSettingsSubmit();
       }
     } catch (error) {
+      // this is unexpected; it means an error was thrown *in validation* or by handleSettingsSubmit; just log it
       console.error(error);
     } finally {
       setLoading(false);
@@ -42,47 +44,52 @@ const Settings: React.FC<Props> = (props) => {
   };
 
   return (
-    <>
-      <label htmlFor="year" className="block text-sm font-medium text-gray-700">
-        Year
+    <div className="w-full">
+      <label htmlFor="year" className="block mb-2 text-sm">
+        Year*
       </label>
       <Select
         id="year"
         value={year}
         onChange={(option) => setYear(option)}
         options={YEARS}
-        className="basic-single mb-4"
+        styles={customStyles}
+        className="basic-single mb-3"
       />
-      <label htmlFor="song" className="block text-sm font-medium text-gray-700">
+      {/* TODO(michaelfromyeg): this needs some styling work */}
+      <label htmlFor="song" className="block mb-2 text-sm">
         Song (if blank, there's a default song!)
       </label>
       <input
-        className="block w-full p-2 mt-1 mb-4 border border-gray-300 rounded-md"
+        className="block w-full p-2 mt-1 mb-3 border border-white rounded-md file:mr-3 file:p-1 file:text-sm file:bg-white file:border-0 cursor-pointer"
         type="file"
         id="song"
         accept=".wav"
         onChange={(e) => setFile(e.target.files?.[0] ?? null)}
       />
-      <label htmlFor="mode" className="block text-sm font-medium text-gray-700">
-        Mode
+      <label htmlFor="mode" className="block mb-2 text-sm">
+        Mode*
       </label>
       <Select
         id="mode"
         value={mode}
         onChange={(option) => setMode(option)}
-        className="basic-single mb-4"
+        className="basic-single mb-3"
         classNamePrefix="select"
         options={MODES}
+        styles={customStyles}
       />
-      {error && <div className="text-red-500 text-sm mb-2">{error}</div>}
+      {error && (
+        <div className="text-center text-red-500 text-sm mb-3">{error}</div>
+      )}
       <button
-        className="w-full py-2 mb-4 text-white bg-blue-500 rounded-md hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
+        className="w-full mt-6 p-2 bg-white text-[#0f0f0f] font-semibold rounded-md disabled:opacity-50 disabled:cursor-not-allowed"
         onClick={validateAndSubmitSettings}
         disabled={loading}
       >
         Submit
       </button>
-    </>
+    </div>
   );
 };
 

@@ -1,17 +1,18 @@
 import React, { useEffect, useState } from "react";
 import { ToastContainer } from "react-toastify";
-import { toast } from "react-toastify";
 import axios from "axios";
 
 import Footer from "./Footer";
 import Form from "./Form";
+import Header from "./Header";
 
-import "../styles/App.css";
-
-import { BASE_URL } from "../utils";
+import { useThrottledToast } from "../hooks/useThrottledToast";
+import { BASE_URL } from "../utils/constants";
 
 const App: React.FC = () => {
-  const [version, setVersion] = useState<string>("");
+  const [version, setVersion] = useState<string | null>(null);
+
+  const throttledToast = useThrottledToast();
 
   useEffect(() => {
     const getStatus = async () => {
@@ -26,26 +27,19 @@ const App: React.FC = () => {
       } catch (error) {
         console.error(error);
 
-        toast.error(
+        throttledToast(
           "There seems to be an issue with the server. Try again later.",
-          {
-            position: "top-right",
-            autoClose: 5000,
-            hideProgressBar: false,
-            closeOnClick: true,
-            pauseOnHover: true,
-            draggable: true,
-            progress: undefined,
-          }
+          "error"
         );
       }
     };
 
     getStatus();
-  }, []);
+  }, [throttledToast]);
 
   return (
-    <div className="flex flex-col items-center">
+    <div className="flex flex-col items-center justify-center min-h-screen">
+      <Header />
       <Form />
       <Footer version={version} />
       <ToastContainer />

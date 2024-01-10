@@ -1,14 +1,14 @@
 import React, { useEffect, useState } from "react";
-import { toast } from "react-toastify";
 import axios from "axios";
 
 import PhoneInput from "./PhoneInput";
 import Processing from "./Processing";
-
-import { BASE_URL, Option, YEARS, MODES } from "../utils";
 import OtpInput from "./OtpInput";
 import Settings from "./Settings";
 import Download from "./Download";
+
+import { BASE_URL, Option, YEARS, MODES } from "../utils/constants";
+import { useThrottledToast } from "../hooks/useThrottledToast";
 
 axios.defaults.withCredentials = true;
 
@@ -31,43 +31,28 @@ type Stage =
 
 const Form: React.FC = () => {
   const [error, setError] = useState<any | null>(null);
-
   const [stage, setStage] = useState<Stage>("phoneInput");
-
   const [phoneNumber, setPhoneNumber] = useState<string>("");
   const [countryCode, setCountryCode] = useState<string>("");
-
   const [otpCode, setOtpCode] = useState<string>("");
   const [otpSession, setOtpSession] = useState<any | null>(null);
-
   const [token, setToken] = useState<string>("");
   const [berealToken, setBerealToken] = useState<string>("");
-
   const [year, setYear] = useState<Option | null>(YEARS[1]);
   const [file, setFile] = useState<File | null>(null);
   const [mode, setMode] = useState<Option | null>(MODES[0]);
-
   const [taskId, setTaskId] = useState<string>("");
-
   const [videoFilename, setVideoFilename] = useState<string>("");
 
-  const showErrorToast = (errorMessage: string) => {
-    toast.error(errorMessage, {
-      position: "top-right",
-      autoClose: 5000,
-      hideProgressBar: false,
-      closeOnClick: true,
-      pauseOnHover: true,
-      draggable: true,
-      progress: undefined,
-    });
-  };
+  const throttledToast = useThrottledToast();
 
   useEffect(() => {
     const interceptor = axios.interceptors.response.use(
       (response) => response,
       (error) => {
-        setError(error);
+        // only log axios errors to the console
+        console.error(error);
+
         return Promise.reject(error);
       }
     );
@@ -92,13 +77,13 @@ const Form: React.FC = () => {
         errorMessage = error.message;
       }
 
-      showErrorToast(errorMessage);
+      throttledToast(errorMessage, "error");
       // localStorage.removeItem("session");
       setStage("phoneInput");
     }
-  }, [error]);
+  }, [error, throttledToast]);
 
-  const handlePhoneSubmit = async () => {
+  const handlePhoneSubmit = async (input: string) => {
     // const session = localStorage.getItem("session");
     // let sessionData: Session | null = session ? JSON.parse(session) : null;
 
@@ -121,15 +106,24 @@ const Form: React.FC = () => {
 
     try {
       // localStorage.removeItem("session");
+      setPhoneNumber(input);
 
       const response = await axios.post(`${BASE_URL}/request-otp`, {
-        phone: `${countryCode}${phoneNumber}`,
+        phone: `${countryCode}${input}`,
       });
 
       setOtpSession(response.data?.otpSession);
       setStage("otpInput");
     } catch (error) {
-      console.error("Error sending OTP:", error);
+      if ((error as any).response && (error as any).response.status === 429) {
+        throttledToast((error as any).response.data.message, "error");
+      } else {
+        console.error("Error sending verification code:", error);
+        throttledToast(
+          "Couldn't send the verification code. Please try again.",
+          "error"
+        );
+      }
     }
   };
 
@@ -156,7 +150,11 @@ const Form: React.FC = () => {
 
       setStage("settings");
     } catch (error) {
-      console.error("Error validating OTP:", error);
+      console.error("Error validating verification code:", error);
+      throttledToast(
+        "Couldn't validate your verification code. Please try again.",
+        "error"
+      );
     }
   };
 
@@ -184,7 +182,9 @@ const Form: React.FC = () => {
       });
 
       if (response.status === 401) {
-        showErrorToast("Please refresh the page and try again.");
+        setError(
+          "An unexpected error occurred in creating your video. Please refresh the page and try again."
+        );
         setStage("phoneInput");
         return;
       }
@@ -194,95 +194,53 @@ const Form: React.FC = () => {
       setStage("processing");
     } catch (error) {
       console.error("Error submitting settings:", error);
-    }
-  };
-
-  const handleKeyDown = (event: any) => {
-    if (event.key === "Enter") {
-      event.preventDefault();
-      switch (stage) {
-        case "phoneInput":
-          handlePhoneSubmit();
-          break;
-        case "otpInput":
-          handleOtpSubmit();
-          break;
-        case "settings":
-          handleSettingsSubmit();
-          break;
-        default:
-          break;
-      }
+      throttledToast(
+        "Couldn't submit your settings. Please try again.",
+        "error"
+      );
     }
   };
 
   const videoUrl = `${BASE_URL}/video/${videoFilename}?phone=${countryCode}${phoneNumber}&berealToken=${berealToken}`;
 
   return (
-    <div className="flex flex-col items-center justify-center p-8 bg-white rounded-lg shadow-md max-w-md w-full mx-auto my-6">
-      <h1 className="text-4xl font-bold text-center mb-3">BeReal. Recap.</h1>
-      <p className="text-center max-w-sm mb-3">
-        Create a recap video of your BeReals. Only uses your phone number and
-        does not store any information. Videos are deleted after 24 hours and
-        only accessible by you!
-      </p>
-      <p className="text-center max-w-sm mb-6">
-        If you get an error, refresh the page and try again. If errors persist,
-        feel free to make an issue on GitHub.
-      </p>
-      <div className="w-full">
-        {stage === "phoneInput" && (
-          <PhoneInput
-            setCountryCode={setCountryCode}
-            setPhoneNumber={setPhoneNumber}
-            phoneNumber={phoneNumber}
-            handlePhoneSubmit={handlePhoneSubmit}
-            handleKeyDown={handleKeyDown}
-          />
-        )}
-        {stage === "otpInput" && (
-          <OtpInput
-            otpCode={otpCode}
-            setOtpCode={setOtpCode}
-            handleOtpSubmit={handleOtpSubmit}
-            handleKeyDown={handleKeyDown}
-          />
-        )}
-        {stage === "settings" && (
-          <Settings
-            setYear={setYear}
-            setMode={setMode}
-            setFile={setFile}
-            handleSettingsSubmit={handleSettingsSubmit}
-            year={year}
-            mode={mode}
-            file={file}
-          />
-        )}
-        {stage === "processing" && (
-          <Processing
-            phone={`${countryCode}${phoneNumber}`}
-            berealToken={berealToken}
-            taskId={taskId}
-            setResult={setVideoFilename}
-            setError={setError}
-            setStage={setStage}
-          />
-        )}
-        {stage === "videoDisplay" && (
-          <>
-            {/* TODO(michaelfromyeg): enable video previews */}
-            {/*
-              <video controls>
-                <source src={videoUrl} type="video/mp4" />{" "}
-                Your browser does not support the video tag. The download button
-                should work though!
-              </video>
-            */}
-            <Download href={videoUrl} />
-          </>
-        )}
-      </div>
+    <div className="w-screen p-6 flex flex-col items-center justify-center rounded-lg md:max-w-md max-w-xs mx-auto bg-subtle-radial text-white border border-1 border-white">
+      {stage === "phoneInput" && (
+        <PhoneInput
+          setCountryCode={setCountryCode}
+          setPhoneNumber={setPhoneNumber}
+          handlePhoneSubmit={handlePhoneSubmit}
+        />
+      )}
+      {stage === "otpInput" && (
+        <OtpInput
+          otpCode={otpCode}
+          setOtpCode={setOtpCode}
+          handleOtpSubmit={handleOtpSubmit}
+        />
+      )}
+      {stage === "settings" && (
+        <Settings
+          setYear={setYear}
+          setMode={setMode}
+          setFile={setFile}
+          handleSettingsSubmit={handleSettingsSubmit}
+          year={year}
+          mode={mode}
+          file={file}
+        />
+      )}
+      {stage === "processing" && (
+        <Processing
+          phone={`${countryCode}${phoneNumber}`}
+          berealToken={berealToken}
+          taskId={taskId}
+          setResult={setVideoFilename}
+          setError={setError}
+          setStage={setStage}
+        />
+      )}
+      {stage === "videoDisplay" && <Download href={videoUrl} />}
     </div>
   );
 };

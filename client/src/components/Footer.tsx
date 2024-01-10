@@ -1,42 +1,61 @@
 import React from "react";
 
 interface Props {
-  version: string;
+  version: string | null;
 }
 
 const Footer: React.FC<Props> = (props: Props) => {
   const { version } = props;
 
   return (
-    <footer className="text-center">
-      <div className="flex justify-center items-center space-x-1">
-        <div className="mb-0">a project from Michael DeMarco</div>
-        <span>|</span>
+    <footer className="flex flex-col justify-center items-center gap-4 mt-6">
+      <div className="text-center text-white">
+        <p className="max-w-sm">
+          If you get an error, refresh the page and try again. If errors
+          persist, feel free to{" "}
+          <a
+            href="https://github.com/michaelfromyeg/bereal-wrapped/issues/new"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            make an issue on GitHub
+          </a>
+          .
+        </p>
+      </div>
+      <div className="flex flex-row justify-center items-center space-x-1 text-white">
         <a
+          className="text-link hover:text-link-dark focus:outline-none focus:ring-2 focus:ring-link focus:ring-opacity-50"
+          href="https://michaeldemar.co"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          by Michael DeMarco
+        </a>
+        <span>•</span>
+        <a
+          className="text-link hover:text-link-dark focus:outline-none focus:ring-2 focus:ring-link focus:ring-opacity-50"
+          href="https://buymeacoffee.com/michaelfromyeg"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          buy me a coffee
+        </a>
+        <span>•</span>
+        <a
+          className="text-link hover:text-link-dark focus:outline-none focus:ring-2 focus:ring-link focus:ring-opacity-50"
           href="https://github.com/michaelfromyeg/bereal-wrapped"
           target="_blank"
           rel="noopener noreferrer"
-          className="hover:text-blue-300"
         >
           GitHub
         </a>
         {version && (
           <>
-            <span>|</span>
+            <span>•</span>
             <div className="mb-0">version {version}</div>
           </>
         )}
-        {/*
-          <span>|</span>
-          <a
-            href="https://yourdonationlink.com"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="hover:text-blue-300"
-          >
-            Donate
-          </a>
-        */}
       </div>
     </footer>
   );

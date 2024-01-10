@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 
-import { BASE_URL } from "../utils";
+import { BASE_URL } from "../utils/constants";
 
 interface Props {
   phone: string;
@@ -67,6 +67,7 @@ const VideoProcessor: React.FC<Props> = (props: Props) => {
             setProgress(logProgress(response.data));
           }
         } catch (error) {
+          // again, not something the user needs to know about; just try again
           console.error("Error checking progress:", error);
         }
       }
@@ -96,22 +97,22 @@ const VideoProcessor: React.FC<Props> = (props: Props) => {
   ]);
 
   return (
-    <>
+    <div className="w-full">
       {taskId ? (
         <div>
-          <p className="text-center max-w-sm mb-6">
+          <p className="text-center max-w-sm mb-3">
             Videos take around 10 minutes to generate. A download button will
             appear when ready, and you'll also receive a text message with the
             link.
           </p>
-          <p className="text-blue-500 text-center mb-6">Processing...</p>
+          <p className="text-white font-semibold text-center">Processing...</p>
         </div>
       ) : (
-        <p className="text-red-500 text-center mb-6">
+        <p className="text-red-500 font-semibold text-center">
           No task ID available. Refresh the page to try again.
         </p>
       )}
-    </>
+    </div>
   );
 };
 

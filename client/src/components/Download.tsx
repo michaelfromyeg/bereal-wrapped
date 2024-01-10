@@ -18,12 +18,27 @@ const Download: React.FC<Props> = (props) => {
   };
 
   return (
-    <button
-      className="w-full py-2 mb-4 text-white bg-blue-500 rounded-md hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
-      onClick={handleDownload}
-    >
-      Download your video
-    </button>
+    <>
+      <video
+        controls
+        playsInline
+        muted
+        disablePictureInPicture
+        disableRemotePlayback
+        loop
+        autoPlay
+      >
+        <source src={href} type="video/mp4" /> Your browser does not support the
+        video tag. The download button should work though!
+      </video>
+
+      <button
+        className="w-full mt-6 p-2 bg-white text-[#0f0f0f] font-semibold rounded-md disabled:opacity-50 disabled:cursor-not-allowed"
+        onClick={handleDownload}
+      >
+        Download your video
+      </button>
+    </>
   );
 };
 

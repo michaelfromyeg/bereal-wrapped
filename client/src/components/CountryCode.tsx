@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import Select from "react-select";
+import Select, { StylesConfig } from "react-select";
 import { getCountries, getCountryCallingCode } from "libphonenumber-js";
 
 const countries = getCountries();
@@ -8,6 +8,56 @@ interface CountryOption {
   value: string;
   label: string;
 }
+
+// TODO(michaelfromyeg): move this
+export const customStyles: StylesConfig<CountryOption, false> = {
+  control: (provided, state) => ({
+    ...provided,
+    backgroundColor: "transparent",
+    color: "white",
+    borderColor: "white",
+    boxShadow: "none",
+    ":hover": {
+      borderColor: "white",
+    },
+    ...(state.isFocused && {
+      borderColor: "white",
+      boxShadow: "none",
+    }),
+  }),
+  input: (provided) => ({
+    ...provided,
+    color: "white",
+  }),
+  menu: (provided) => ({
+    ...provided,
+    backgroundColor: "#1e1e1e",
+  }),
+  option: (provided, state) => ({
+    ...provided,
+    backgroundColor: state.isSelected ? "#373737" : "transparent",
+    color: "white",
+    "&:hover": {
+      backgroundColor: "#003e54", // "#2a2a2a",
+    },
+  }),
+  placeholder: (provided) => ({
+    ...provided,
+    color: "white",
+  }),
+  singleValue: (provided) => ({
+    ...provided,
+    color: "white",
+  }),
+  indicatorsContainer: (provided) => ({
+    ...provided,
+    color: "white",
+  }),
+  indicatorSeparator: (provided) => ({
+    ...provided,
+    backgroundColor: "transparent",
+  }),
+};
 
 interface Props {
   setCountryCode: Function;
@@ -29,6 +79,7 @@ const CountryCodeSelect: React.FC<Props> = (props: Props) => {
         label: `${countryCode} (+${phoneCode})`,
       };
     });
+
     setCountryOptions(options);
   }, []);
 
@@ -36,25 +87,22 @@ const CountryCodeSelect: React.FC<Props> = (props: Props) => {
     setSelectedOption(option);
 
     if (option) {
-      console.log(option.value);
       setCountryCode(option.value);
     }
   };
 
   return (
     <>
-      <label
-        htmlFor="countryCode"
-        className="block text-sm font-medium text-gray-700"
-      >
-        Country Code
+      <label htmlFor="countryCode" className="block mb-2 text-sm">
+        Country Code*
       </label>
       <Select
         id="countryCode"
         value={selectedOption}
         onChange={handleChange}
         options={countryOptions}
-        className="basic-single mb-4"
+        className="basic-single mb-3"
+        styles={customStyles}
         classNamePrefix="select"
         placeholder="Select Country"
       />

@@ -1,17 +1,27 @@
 import { useEffect, useState } from "react";
+import { useThrottledToast } from "../hooks/useThrottledToast";
 
 interface Props {
   otpCode: string;
   setOtpCode: React.Dispatch<React.SetStateAction<string>>;
   handleOtpSubmit: () => void;
-  handleKeyDown: (e: React.KeyboardEvent<HTMLInputElement>) => void;
 }
 
 const OtpInput: React.FC<Props> = (props) => {
-  const { otpCode, setOtpCode, handleOtpSubmit, handleKeyDown } = props;
+  const { otpCode, setOtpCode, handleOtpSubmit } = props;
 
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string>("");
+
+  const throttledToast = useThrottledToast();
+
+  const handleKeyDown = (event: any) => {
+    if (event.key === "Enter") {
+      event.preventDefault();
+
+      validateAndSubmitOtpCode();
+    }
+  };
 
   useEffect(() => {
     const abortController = new AbortController();
@@ -29,7 +39,11 @@ const OtpInput: React.FC<Props> = (props) => {
           setOtpCode(content.code);
           handleOtpSubmit();
         } catch (error) {
-          console.error(error);
+          console.warn(error);
+          throttledToast(
+            "Couldn't paste your verification code automatically. Enter it manually.",
+            "warning"
+          );
         }
       }
     };
@@ -39,7 +53,7 @@ const OtpInput: React.FC<Props> = (props) => {
     return () => {
       abortController.abort();
     };
-  }, [setOtpCode, handleOtpSubmit]);
+  }, [setOtpCode, handleOtpSubmit, throttledToast]);
 
   const validateAndSubmitOtpCode = async () => {
     setError("");
@@ -52,6 +66,7 @@ const OtpInput: React.FC<Props> = (props) => {
         await handleOtpSubmit();
       }
     } catch (error) {
+      // this is unexpected; it means an error was thrown *in validation* or by handleOtpSubmit; just log it
       console.error(error);
     } finally {
       setLoading(false);
@@ -59,15 +74,12 @@ const OtpInput: React.FC<Props> = (props) => {
   };
 
   return (
-    <>
-      <label
-        htmlFor="otpCode"
-        className="block text-sm font-medium text-gray-700"
-      >
-        Verification Code
+    <div className="w-full">
+      <label htmlFor="otpCode" className="block mb-2 text-sm">
+        Verification Code*
       </label>
       <input
-        className="block w-full p-2 mt-1 mb-4 border border-gray-300 rounded-md"
+        className="block w-full p-2 mt-1 mb-3 border border-white rounded-md bg-transparent placeholder-white focus:border-white focus:outline-none"
         type="text"
         id="otpCode"
         autoComplete="one-time-code"
@@ -76,15 +88,17 @@ const OtpInput: React.FC<Props> = (props) => {
         onChange={(e) => setOtpCode(e.target.value)}
         onKeyDown={handleKeyDown}
       />
-      {error && <div className="text-red-500 text-sm mb-2">{error}</div>}
+      {error && (
+        <div className="text-center text-red-500 text-sm mb-3">{error}</div>
+      )}
       <button
-        className="w-full py-2 mb-4 text-white bg-blue-500 rounded-md hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
+        className="w-full mt-6 p-2 bg-white text-[#0f0f0f] font-semibold rounded-md disabled:opacity-50 disabled:cursor-not-allowed"
         onClick={validateAndSubmitOtpCode}
         disabled={loading}
       >
         Validate verification code
       </button>
-    </>
+    </div>
   );
 };
 

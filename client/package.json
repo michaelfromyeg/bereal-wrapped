@@ -50,6 +50,7 @@
   },
   "devDependencies": {
     "@babel/plugin-proposal-private-property-in-object": "^7.21.11",
+    "@types/react-select": "^5.0.1",
     "@types/webappsec-credential-management": "^0.6.8"
   }
 }
