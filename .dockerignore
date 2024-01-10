@@ -1,15 +1,21 @@
+.github/
 .mypy_cache/
 .ruff_cache/
 .vscode/
 
-content/
 client/
+content/
 env/
 exports/
 
 .editorconfig
+.env
+.env.example
 .gitignore
 .markdownlint.json
+celery.log
+docker-compose.local.yml
+dumb.rdb
 LICENSE
 log.log
 README.md

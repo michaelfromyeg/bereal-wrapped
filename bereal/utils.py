@@ -71,7 +71,9 @@ FONT_BASE_PATH = os.path.join(STATIC_PATH, "fonts")
 IMAGES_PATH = os.path.join(STATIC_PATH, "images")
 
 SONGS_PATH = os.path.join(STATIC_PATH, "songs")
-DEFAULT_SONG_PATH = os.path.join(SONGS_PATH, "midnight-city.wav")
+
+DEFAULT_SONG_PATH = os.path.join(SONGS_PATH, "seven-nation-army.wav")
+DEFAULT_SHORT_SONG_PATH = os.path.join(SONGS_PATH, "midnight-city-short.wav")
 
 ENDCARD_TEMPLATE_IMAGE_PATH = os.path.join(IMAGES_PATH, "endCard_template.jpg")
 ENDCARD_IMAGE_PATH = os.path.join(IMAGES_PATH, "endCard.jpg")
@@ -88,14 +90,14 @@ config = configparser.ConfigParser()
 
 config.read("config.ini")
 
-HOST: str | None = os.getenv("HOST") or config.get("bereal", "host", fallback="localhost")
-PORT: str | None = os.getenv("PORT") or config.get("bereal", "port", fallback="5000")
+HOST: str | None = os.getenv("HOST") or "localhost"
+PORT: str | None = os.getenv("PORT") or "5000"
 PORT = int(PORT) if PORT is not None else None
 
 TRUE_HOST = f"http://{HOST}:{PORT}" if FLASK_ENV == "development" else "https://api.bereal.michaeldemar.co"
 
-REDIS_HOST: str | None = os.getenv("REDIS_HOST") or config.get("bereal", "redis_host", fallback="redis")
-REDIS_PORT: str | None = os.getenv("REDIS_PORT") or config.get("bereal", "redis_port", fallback="6379")
+REDIS_HOST: str | None = os.getenv("REDIS_HOST") or "redis"
+REDIS_PORT: str | None = os.getenv("REDIS_PORT") or "6379"
 REDIS_PORT = int(REDIS_PORT) if REDIS_PORT is not None else None
 
 TIMEOUT = config.getint("bereal", "timeout", fallback=10)

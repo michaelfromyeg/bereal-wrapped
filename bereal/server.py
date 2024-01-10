@@ -28,6 +28,7 @@ from .logger import logger  # noqa: E402
 from .utils import (  # noqa: E402
     CONTENT_PATH,
     DEFAULT_SONG_PATH,
+    DEFAULT_SHORT_SONG_PATH,
     EXPORTS_PATH,
     FLASK_ENV,
     GIT_COMMIT_HASH,
@@ -36,6 +37,7 @@ from .utils import (  # noqa: E402
     REDIS_HOST,
     REDIS_PORT,
     SECRET_KEY,
+    Mode,
     str2mode,
 )
 
@@ -123,10 +125,10 @@ def request_otp() -> tuple[Response, int]:
     if otp_session is None:
         return jsonify(
             {
-                "error": "Bad Request",
-                "message": "Invalid phone number; BeReal is likely rate-limiting the service. Make sure not to include anything besides the digits (i.e., not '+' or '-' or spaces).",
+                "error": "Too Many Requests",
+                "message": "BeReal is rate-limiting your phone number. Please try again later.",
             }
-        ), 400
+        ), 429
 
     return jsonify({"otpSession": otp_session}), 200
 
@@ -185,10 +187,10 @@ def create_video() -> tuple[Response, int]:
             wav_file.save(song_path)
         except Exception as error:
             logger.warning("Could not save music file, received: %s", error)
-            song_path = DEFAULT_SONG_PATH
+            song_path = DEFAULT_SHORT_SONG_PATH if mode == Mode.CLASSIC else DEFAULT_SONG_PATH
     else:
         logger.info("No music file provided; using default...")
-        song_path = DEFAULT_SONG_PATH
+        song_path = DEFAULT_SHORT_SONG_PATH if mode == Mode.CLASSIC else DEFAULT_SONG_PATH
 
     logger.info("Queueing video task...")
 
