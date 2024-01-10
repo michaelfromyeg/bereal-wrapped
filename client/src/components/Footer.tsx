@@ -23,7 +23,7 @@ const Footer: React.FC<Props> = (props: Props) => {
           .
         </p>
       </div>
-      <div className="flex flex-row justify-center items-center space-x-1 text-white">
+      <div className="max-w-sm flex flex-col justify-center items-center space-x-1 text-white">
         <a
           className="text-link hover:text-link-dark focus:outline-none focus:ring-2 focus:ring-link focus:ring-opacity-50"
           href="https://michaeldemar.co"
@@ -32,7 +32,6 @@ const Footer: React.FC<Props> = (props: Props) => {
         >
           by Michael DeMarco
         </a>
-        <span>•</span>
         <a
           className="text-link hover:text-link-dark focus:outline-none focus:ring-2 focus:ring-link focus:ring-opacity-50"
           href="https://buymeacoffee.com/michaelfromyeg"
@@ -41,7 +40,6 @@ const Footer: React.FC<Props> = (props: Props) => {
         >
           buy me a coffee
         </a>
-        <span>•</span>
         <a
           className="text-link hover:text-link-dark focus:outline-none focus:ring-2 focus:ring-link focus:ring-opacity-50"
           href="https://github.com/michaelfromyeg/bereal-wrapped"
@@ -50,12 +48,7 @@ const Footer: React.FC<Props> = (props: Props) => {
         >
           GitHub
         </a>
-        {version && (
-          <>
-            <span>•</span>
-            <div className="mb-0">version {version}</div>
-          </>
-        )}
+        {version && <div className="mb-0">version {version}</div>}
       </div>
     </footer>
   );
