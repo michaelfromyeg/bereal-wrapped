@@ -38,7 +38,7 @@ const App: React.FC = () => {
   }, [throttledToast]);
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen pt-12">
+    <div className="flex flex-col items-center justify-center min-h-screen py-8">
       <Header />
       <Form />
       <Footer version={version} />
