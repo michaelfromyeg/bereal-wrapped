@@ -7,22 +7,30 @@ import subprocess
 from datetime import datetime
 from enum import StrEnum
 
-from dotenv import load_dotenv
-
 from .logger import logger
 
-# Environment variables
-load_dotenv()
 
-SECRET_KEY = os.getenv("SECRET_KEY") or "SECRET_KEY"
-FLASK_ENV = os.getenv("FLASK_ENV") or "production"
+# Environment variables
+def get_secret(secret_name: str) -> str | None:
+    """
+    Get a Docker Swarm secret.
+    """
+    try:
+        with open(f"/run/secrets/{secret_name}", "r") as secret_file:
+            return secret_file.read().strip()
+    except IOError:
+        return None
+
+
+SECRET_KEY = get_secret("secret_key") or "SECRET_KEY"
+FLASK_ENV = get_secret("flask_env") or "production"
 
 if SECRET_KEY == "SECRET_KEY":
     raise ValueError("SECRET_KEY environment variable not set or non-unique")
 
-TWILIO_PHONE_NUMBER = os.getenv("TWILIO_PHONE_NUMBER")
-TWILIO_AUTH_TOKEN = os.getenv("TWILIO_AUTH_TOKEN")
-TWILIO_ACCOUNT_SID = os.getenv("TWILIO_ACCOUNT_SID")
+TWILIO_PHONE_NUMBER = get_secret("twilio_phone_number")
+TWILIO_AUTH_TOKEN = get_secret("twilio_auth_token")
+TWILIO_ACCOUNT_SID = get_secret("twilio_account_sid")
 
 if TWILIO_PHONE_NUMBER is None or TWILIO_AUTH_TOKEN is None or TWILIO_ACCOUNT_SID is None:
     raise ValueError("TWILIO environment variables not set")
@@ -90,14 +98,14 @@ config = configparser.ConfigParser()
 
 config.read("config.ini")
 
-HOST: str | None = os.getenv("HOST") or "localhost"
-PORT: str | None = os.getenv("PORT") or "5000"
+HOST: str | None = get_secret("host") or "localhost"
+PORT: str | None = get_secret("port") or "5000"
 PORT = int(PORT) if PORT is not None else None
 
 TRUE_HOST = f"http://{HOST}:{PORT}" if FLASK_ENV == "development" else "https://api.bereal.michaeldemar.co"
 
-REDIS_HOST: str | None = os.getenv("REDIS_HOST") or "redis"
-REDIS_PORT: str | None = os.getenv("REDIS_PORT") or "6379"
+REDIS_HOST: str | None = get_secret("redis_host") or "redis"
+REDIS_PORT: str | None = get_secret("redis_port") or "6379"
 REDIS_PORT = int(REDIS_PORT) if REDIS_PORT is not None else None
 
 TIMEOUT = config.getint("bereal", "timeout", fallback=10)

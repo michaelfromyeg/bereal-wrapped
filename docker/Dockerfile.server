@@ -5,11 +5,15 @@ WORKDIR /app
 COPY . .
 COPY --chmod=+x ./scripts/server-entrypoint.sh .
 
+ENV PIP_NO_WARN_SCRIPT_LOCATION=0
+
 RUN apt-get update && apt-get install -y git && \
     pip install --upgrade pip && \
-    pip install --no-cache-dir -r requirements/prod.txt && \
-    adduser --disabled-password --gecos '' thekid && \
-    chown -R thekid:thekid /app
+    pip install --no-cache-dir -r requirements/prod.txt
+
+RUN addgroup --gid 1000 thekids && \
+    adduser --disabled-password --gecos '' --uid 1000 --gid 1000 thekid && \
+    chown -R thekid:thekids /app
 
 USER thekid
 

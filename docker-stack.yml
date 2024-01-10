@@ -1,0 +1,100 @@
+version: "3.8"
+
+services:
+  web:
+    image: michaelfromyeg/bereal_wrapped:latest
+    volumes:
+      - /mnt/videos:/app/exports
+      - /mnt/content:/app/content
+    ports:
+      - "5000:5000"
+    environment:
+      - FLASK_APP=bereal.server
+    secrets:
+      - flask_env
+      - secret_key
+      - host
+      - port
+      - redis_host
+      - redis_port
+      - twilio_phone_number
+      - twilio_auth_token
+      - twilio_account_sid
+    deploy:
+      resources:
+        limits:
+          memory: 500M
+      replicas: 1
+
+  celery:
+    image: michaelfromyeg/bereal_wrapped:latest
+    volumes:
+      - /mnt/videos:/app/exports
+      - /mnt/content:/app/content
+    command: celery -A bereal.celery worker --loglevel=INFO --logfile=celery.log -E -c 1
+    environment:
+      - FLASK_APP=bereal.server
+    secrets:
+      - flask_env
+      - secret_key
+      - host
+      - port
+      - redis_host
+      - redis_port
+      - twilio_phone_number
+      - twilio_auth_token
+      - twilio_account_sid
+    deploy:
+      resources:
+        limits:
+          memory: 3G
+      replicas: 1
+
+  redis:
+    image: "redis:alpine"
+    volumes:
+      - ./redis/redis.conf:/usr/local/etc/redis/redis.conf
+    command: redis-server /usr/local/etc/redis/redis.conf
+    deploy:
+      replicas: 1
+
+  nginx:
+    image: "nginx:alpine"
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx:/etc/nginx/conf.d
+      - ./nginx/robots.txt:/usr/share/nginx/html/robots.txt
+      - /var/log/nginx:/var/log/nginx
+      - /etc/letsencrypt:/etc/letsencrypt
+    deploy:
+      replicas: 1
+
+volumes:
+  exports:
+  content:
+
+configs:
+  redis_conf:
+    file: ./redis/redis.conf
+
+secrets:
+  flask_env:
+    external: true
+  secret_key:
+    external: true
+  host:
+    external: true
+  port:
+    external: true
+  redis_host:
+    external: true
+  redis_port:
+    external: true
+  twilio_phone_number:
+    external: true
+  twilio_auth_token:
+    external: true
+  twilio_account_sid:
+    external: true

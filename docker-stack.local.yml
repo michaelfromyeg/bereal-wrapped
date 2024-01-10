@@ -1,0 +1,106 @@
+version: "3.8"
+
+services:
+  web:
+    image: michaelfromyeg/bereal_wrapped
+    volumes:
+      - exports:/app/exports
+      - content:/app/content
+    command: web
+    ports:
+      - "5000:5000"
+    environment:
+      - FLASK_APP=bereal.server
+    secrets:
+      - flask_env
+      - secret_key
+      - host
+      - port
+      - redis_host
+      - redis_port
+      - twilio_phone_number
+      - twilio_auth_token
+      - twilio_account_sid
+    deploy:
+      replicas: 1
+
+  celery:
+    image: michaelfromyeg/bereal_wrapped
+    volumes:
+      - exports:/app/exports
+      - content:/app/content
+    command: celery
+    environment:
+      - FLASK_APP=bereal.server
+    secrets:
+      - flask_env
+      - secret_key
+      - host
+      - port
+      - redis_host
+      - redis_port
+      - twilio_phone_number
+      - twilio_auth_token
+      - twilio_account_sid
+    deploy:
+      replicas: 1
+
+  flower:
+    image: michaelfromyeg/bereal_wrapped
+    volumes:
+      - exports:/app/exports
+      - content:/app/content
+    ports:
+      - "5555:5555"
+    command: flower
+    environment:
+      - FLASK_APP=bereal.server
+    secrets:
+      - flask_env
+      - secret_key
+      - host
+      - port
+      - redis_host
+      - redis_port
+      - twilio_phone_number
+      - twilio_auth_token
+      - twilio_account_sid
+    deploy:
+      replicas: 1
+
+  redis:
+    image: "redis:alpine"
+    configs:
+      - source: redis_conf
+        target: /usr/local/etc/redis/redis.conf
+    command: redis-server /usr/local/etc/redis/redis.conf
+    deploy:
+      replicas: 1
+
+volumes:
+  exports:
+  content:
+
+configs:
+  redis_conf:
+    file: ./redis/redis.conf
+
+secrets:
+  flask_env:
+    external: true
+  secret_key:
+    external: true
+  host:
+    external: true
+  port:
+    external: true
+  redis_host:
+    external: true
+  redis_port:
+    external: true
+  twilio_phone_number:
+    external: true
+  twilio_auth_token:
+    external: true
+  twilio_account_sid:
+    external: true

@@ -5,24 +5,21 @@ client:
 	@cd client && npm start
 
 build:
-	@echo "Building the server..."
-	@docker-compose -f docker-compose.local.yml build
+	@echo "Building the server image..."
+	@docker build -t michaelfromyeg/bereal_wrapped -f docker/Dockerfile.server .
+	@docker push michaelfromyeg/bereal_wrapped
 
 up:
 	@echo "Booting up the server..."
-	@docker-compose -f docker-compose.local.yml up -d
+	@docker stack deploy -c docker-stack.local.yml bereal-wrapped
 
 logs:
 	@echo "Showing the server logs..."
-	@docker-compose -f docker-compose.local.yml logs -f
+	@docker service logs -f bereal-wrapped_web
 
 down:
 	@echo "Shutting down the server..."
-	@docker-compose -f docker-compose.local.yml down
-
-kill:
-	@echo "Killing the server..."
-	@docker-compose -f docker-compose.local.yml kill
+	@docker stack rm bereal-wrapped
 
 start-redis:
 	@echo "Booting up Redis..."
