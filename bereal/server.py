@@ -151,7 +151,7 @@ def validate_otp() -> tuple[Response, int]:
         return jsonify({"error": "Bad Request", "message": "Invalid verification code"}), 400
 
     # generate a custom app token; this we can safely save in our DB
-    bereal_token = secrets.token_urlsafe(20)
+    bereal_token = secrets.token_hex(10)
 
     insert_bereal_token(phone, bereal_token)
 
@@ -317,8 +317,11 @@ def delete_expired_tokens() -> None:
     """
     Delete all expired tokens from the database.
     """
-    expiration_time = datetime.utcnow() - timedelta(hours=24)
-    BerealToken.query.filter(BerealToken.timestamp < expiration_time).delete()
+    expiration_time = datetime.utcnow() - timedelta(days=1)
+
+    n = BerealToken.query.filter(BerealToken.timestamp < expiration_time).delete()
+    logger.info("Deleted %d expired tokens", n)
+
     db.session.commit()
 
     return None
@@ -328,7 +331,7 @@ def delete_old_videos() -> None:
     """
     Delete videos that are more than a day old.
     """
-    time_limit = datetime.now() - timedelta(days=1)
+    expiration_time = datetime.utcnow() - timedelta(days=1)
 
     for filename in os.listdir(EXPORTS_PATH):
         file_path = os.path.join(EXPORTS_PATH, filename)
@@ -336,7 +339,7 @@ def delete_old_videos() -> None:
         if os.path.isfile(file_path):
             file_mod_time = datetime.fromtimestamp(os.path.getmtime(file_path))
 
-            if file_mod_time < time_limit:
+            if file_mod_time < expiration_time:
                 try:
                     os.remove(file_path)
                     logger.info("Deleted video file %s", file_path)
