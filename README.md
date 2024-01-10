@@ -126,25 +126,6 @@ Opted for Digital Ocean. Cheap, easy, and supports `docker-compose`.
 * `combine_images.py` processes photos to be used for the slideshow
 * `generate_slideshow.py` rendering time-lapse video and audio
 
-### Current Developments
-
-* [x] Add a SQLite database; expire videos after 24-hours
-* [x] Make files, paths specific to user (i.e., a phone number)
-* [x] Clean-up steps
-* [ ] Add 'no sound' option
-  * [x] Default music
-* [ ] Display RealMoji
-* [ ] Toggle date label setting
-* [ ] Show render progress on webpage
-* [x] Batching algorithm for videos
-* [x] Better phone number support (start with CLI)
-* [ ] Handle 443s everywhere
-* [x] Video endpoint needs to validate some kind of token (or implement proper sessions)
-* [ ] Delete videos after a certain period of time
-* [x] Rate-limit all endpoints
-  * [ ] Tune rate limits per endpoint
-* [ ] Migrate to Docker Swarm
-
 ## Remarks
 
 This project wouldn't be here without the amazing work by [chemokita13](https://github.com/chemokita13/beReal-api). Please give him a star.

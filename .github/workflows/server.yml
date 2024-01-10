@@ -2,6 +2,8 @@ name: Build and Deploy to Digital Ocean
 
 on:
   push:
+    paths-ignore:
+      - "client/**"
     branches:
       - main
 
