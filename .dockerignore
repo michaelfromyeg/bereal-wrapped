@@ -9,7 +9,6 @@ env/
 exports/
 
 .editorconfig
-.env
 .env.example
 .gitignore
 .markdownlint.json
