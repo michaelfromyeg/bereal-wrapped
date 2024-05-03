@@ -7,13 +7,13 @@ Flask-Migrate==4.0.5
 Flask-SQLAlchemy==3.1.1
 flower==2.0.1
 gevent==23.9.1
-gunicorn==21.2.0
+gunicorn==22.0.0
 librosa==0.10.1
 moviepy==2.0.0.dev2
 numpy==1.26.2
-Pillow==10.1.0
+Pillow==10.3.0
 pydub==0.25.1
 python-dotenv==1.0.0
 Requests==2.31.0
-tqdm==4.66.1
+tqdm==4.66.3
 twilio==8.11.0
