@@ -35,7 +35,11 @@ export const customStyles: StylesConfig<CountryOption, false> = {
   }),
   option: (provided, state) => ({
     ...provided,
-    backgroundColor: state.isSelected ? "#373737" : "transparent",
+    backgroundColor: state.isSelected
+      ? "#373737"
+      : state.isFocused
+      ? "#003e54"
+      : "transparent",
     color: "white",
     "&:hover": {
       backgroundColor: "#003e54", // "#2a2a2a",
