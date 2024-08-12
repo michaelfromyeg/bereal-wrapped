@@ -1,6 +1,7 @@
 """
 This script generates a slideshow from a folder of images and a music file.
 """
+
 import os
 
 import librosa

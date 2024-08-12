@@ -1,6 +1,7 @@
 """
 Combine two images together, with the secondary image in the top-left corner of the primary image.
 """
+
 import os
 import shutil
 

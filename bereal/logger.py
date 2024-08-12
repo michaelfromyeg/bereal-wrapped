@@ -1,6 +1,7 @@
 """
 A custom logger.
 """
+
 import logging
 import logging.config
 

@@ -1,3 +1,5 @@
+#!/bin/bash
+
 curl -H "Origin: https://bereal.michaeldemar.co" \
     -H "Access-Control-Request-Method: GET" \
     -H "Access-Control-Request-Headers: X-Requested-With" \

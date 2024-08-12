@@ -58,4 +58,4 @@ typecheck:
 
 format:
 	@echo "Formatting the code..."
-	@ruff bereal
+	@ruff check bereal && ruff format bereal

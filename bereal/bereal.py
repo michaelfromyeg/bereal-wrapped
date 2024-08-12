@@ -1,6 +1,7 @@
 """
 Methods to interface with the unofficial BeReal API.
 """
+
 import os
 from datetime import datetime
 from typing import Any
