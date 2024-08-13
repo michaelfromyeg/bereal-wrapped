@@ -1,6 +1,7 @@
 """
 Methods to interface with the unofficial BeReal API.
 """
+
 import os
 from datetime import datetime
 from typing import Any
@@ -9,6 +10,35 @@ import requests as r
 
 from .logger import logger
 from .utils import BASE_URL, CONTENT_PATH, TIMEOUT, str2datetime
+
+from typing import TypedDict, Literal
+
+
+class MediaInfo(TypedDict):
+    """
+    A media object in a BeReal API response.
+    """
+
+    url: str
+    width: int
+    height: int
+    mediaType: Literal["image"]
+
+
+class BeRealPost(TypedDict):
+    """
+    The response from the 'memories' endpoint.
+    """
+
+    memoryDay: str
+    momentId: str
+    mainPostMemoryId: str
+    mainPostThumbnail: MediaInfo
+    mainPostPrimaryMedia: MediaInfo
+    mainPostSecondaryMedia: MediaInfo
+    mainPostTakenAt: str
+    isLate: bool
+    numPostsForMoment: int
 
 
 def send_code(phone: str) -> Any | None:
@@ -31,10 +61,14 @@ def send_code(phone: str) -> Any | None:
             logger.info("Request successful!")
 
             response_json = response.json()
-            if "data" in response_json and "otpSession" in response_json["data"]:
-                return response_json["data"]["otpSession"]
+            if (
+                "data" in response_json
+                and "otpSession" in response_json["data"]
+                and "sessionInfo" in response_json["data"]["otpSession"]
+            ):
+                return response_json["data"]["otpSession"]["sessionInfo"]
             else:
-                logger.warning("No 'otpSession' found in the response!")
+                logger.warning("No 'sessionInfo' found in the response!")
                 return None
         case _:
             logger.warning("Request failed with status code: %s", response.status_code)
@@ -84,8 +118,9 @@ def memories(phone: str, year: str, token: str, sdate: datetime, edate: datetime
     data_array: list[Any] = []
 
     if response.status_code == 200:
-        response_data = response.json().get("data", {})
-        data_array = response_data.get("data", [])
+        response_json = response.json()
+        logger.debug("memories", response_json)
+        data_array: list[BeRealPost] = response_json["data"].get("data", [])
     else:
         logger.warning("Request failed with status code %s", response.status_code)
         return False
@@ -124,16 +159,20 @@ def memories(phone: str, year: str, token: str, sdate: datetime, edate: datetime
                     "Failed to download %s with code %d; will continue", image_name, img_response.status_code
                 )
 
+    if len(data_array) == 0:
+        logger.warning("No data found in the response!")
+        return False
+
     # iterate through the response and download images
     for item in data_array:
         logger.debug("Processing %s", item)
 
         date_str = item.get("memoryDay", "")
 
-        primary_image_url = item["primary"].get("url", "")
+        primary_image_url = item["mainPostPrimaryMedia"].get("url", "")
         download_image(date_str, primary_image_url, primary_path)
 
-        secondary_image_url = item["secondary"].get("url", "")
+        secondary_image_url = item["mainPostSecondaryMedia"].get("url", "")
         download_image(date_str, secondary_image_url, secondary_path)
 
     return True

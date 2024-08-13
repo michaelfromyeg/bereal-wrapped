@@ -1,6 +1,7 @@
 """
 A command-line interface for the BeReal generator.
 """
+
 import argparse
 import os
 import shutil

@@ -113,6 +113,7 @@ TRUE_HOST = "https://api.bereal.michaeldemar.co" if FLASK_ENV == "production" el
 REDIS_HOST: str | None = get_secret("redis_host") or "redis"
 REDIS_PORT: str | None = get_secret("redis_port") or "6379"
 REDIS_PORT = int(REDIS_PORT) if REDIS_PORT is not None else None
+logger.info("REDIS_HOST: %s, REDIS_PORT: %s", REDIS_HOST, REDIS_PORT)
 
 TIMEOUT = config.getint("bereal", "timeout", fallback=10)
 IMAGE_QUALITY = config.getint("bereal", "image_quality", fallback=50)

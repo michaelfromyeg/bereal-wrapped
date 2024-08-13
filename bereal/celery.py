@@ -1,6 +1,7 @@
 """
 Celery stuff.
 """
+
 import gc
 from celery import Celery
 
