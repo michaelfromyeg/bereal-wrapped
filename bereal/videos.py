@@ -78,6 +78,9 @@ def create_slideshow3(
         raise ValueError("Music file does not exist!")
 
     n_images = len(os.listdir(input_folder))
+    if n_images == 0:
+        raise ValueError("No images found in input folder!")
+
     if len(timestamps) < n_images:
         additional_needed = n_images - len(timestamps)
 

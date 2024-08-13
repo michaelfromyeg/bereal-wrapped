@@ -100,6 +100,7 @@ TRUE_HOST = f"http://{HOST}:{PORT}" if FLASK_ENV == "development" else "https://
 REDIS_HOST: str | None = os.getenv("REDIS_HOST") or "redis"
 REDIS_PORT: str | None = os.getenv("REDIS_PORT") or "6379"
 REDIS_PORT = int(REDIS_PORT) if REDIS_PORT is not None else None
+logger.info("REDIS_HOST: %s, REDIS_PORT: %s", REDIS_HOST, REDIS_PORT)
 
 TIMEOUT = config.getint("bereal", "timeout", fallback=10)
 IMAGE_QUALITY = config.getint("bereal", "image_quality", fallback=50)

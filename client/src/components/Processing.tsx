@@ -35,10 +35,7 @@ const VideoProcessor: React.FC<Props> = (props: Props) => {
           if (response.status === 401) {
             setError("Please refresh the page and try again.");
             setStage("phoneInput");
-            return;
-          }
-
-          if (response.status > 299) {
+          } else if (response.status > 299) {
             console.warn("Couldn't check progress:", response);
             console.log("Progress unknown... continuing anyway!");
 
@@ -48,23 +45,21 @@ const VideoProcessor: React.FC<Props> = (props: Props) => {
               setError("Failed to generate video. Try again later.");
               setStage("phoneInput");
             }
-
-            return;
-          }
-
-          const { status, result } = response.data;
-
-          if (status === "FAILURE") {
-            setError("Failed to generate video. Try again later.");
-            setStage("phoneInput");
-          }
-          if (status === "SUCCESS") {
-            setProgress(100);
-
-            setResult(result);
-            setStage("videoDisplay");
           } else {
-            setProgress(logProgress(response.data));
+            const { status, result } = response.data;
+
+            if (status === "FAILURE") {
+              setError("Failed to generate video. Try again later.");
+              setStage("phoneInput");
+            }
+            if (status === "SUCCESS") {
+              setProgress(100);
+
+              setResult(result);
+              setStage("videoDisplay");
+            } else {
+              setProgress(logProgress(response.data));
+            }
           }
         } catch (error) {
           // again, not something the user needs to know about; just try again
