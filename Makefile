@@ -35,14 +35,20 @@ stop-redis:
 
 celery:
 	@echo "Booting up Celery..."
+	@export FLASK_APP=bereal.server
+	@export FLASK_ENV=development--non-docker
 	@celery -A bereal.celery worker --loglevel=DEBUG --logfile=celery.log -E
 
 flower:
 	@echo "Booting up Flower..."
+	@export FLASK_APP=bereal.server
+	@export FLASK_ENV=development--non-docker
 	@celery -A bereal.celery flower --address=0.0.0.0 --inspect --enable-events --loglevel=DEBUG --logfile=flower.log
 
 server:
 	@echo "Booting up the server..."
+	@export FLASK_APP=bereal.server
+	@export FLASK_ENV=development--non-docker
 	@python -m bereal.server
 
 cli:

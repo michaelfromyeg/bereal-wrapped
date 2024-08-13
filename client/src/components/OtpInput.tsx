@@ -1,27 +1,76 @@
-import { useEffect, useState } from "react";
+import axios from "axios";
+import { useCallback, useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { useFormContext } from "../context/FormContext";
+import { SomeError, useError } from "../hooks/useError";
 import { useThrottledToast } from "../hooks/useThrottledToast";
+import { BASE_URL } from "../utils/constants";
 
-interface Props {
-  otpCode: string;
-  setOtpCode: React.Dispatch<React.SetStateAction<string>>;
-  handleOtpSubmit: () => void;
+interface ValidateOtpResponse {
+  token: string;
+  bereal_token: string;
 }
 
-const OtpInput: React.FC<Props> = (props) => {
-  const { otpCode, setOtpCode, handleOtpSubmit } = props;
+interface ErrorResponse {
+  message: string;
+}
 
-  const [loading, setLoading] = useState<boolean>(false);
-  const [error, setError] = useState<string>("");
+interface Props {}
 
+const OtpInput: React.FC<Props> = () => {
+  const {
+    phoneNumber,
+    countryCode,
+    otpSession,
+    otpCode,
+    setOtpCode,
+    setToken,
+    setBerealToken,
+  } = useFormContext();
+  const navigate = useNavigate();
   const throttledToast = useThrottledToast();
 
-  const handleKeyDown = (event: any) => {
+  const [loading, setLoading] = useState<boolean>(false);
+  const { error, setError } = useError(
+    "Couldn't validate your verification code. Please try again."
+  );
+
+  const handleKeyDown = (event: any): void => {
     if (event.key === "Enter") {
       event.preventDefault();
 
       validateAndSubmitOtpCode();
     }
   };
+
+  const handleOtpSubmit = useCallback(async (): Promise<void> => {
+    try {
+      const response = await axios.post<ValidateOtpResponse>(
+        `${BASE_URL}/validate-otp`,
+        {
+          otp_session: otpSession,
+          otp_code: otpCode,
+          phone: `${countryCode}${phoneNumber}`,
+        }
+      );
+
+      setToken(response.data.token);
+      setBerealToken(response.data.bereal_token);
+
+      navigate("settings");
+    } catch (error) {
+      setError(error as SomeError);
+    }
+  }, [
+    countryCode,
+    navigate,
+    otpCode,
+    otpSession,
+    phoneNumber,
+    setBerealToken,
+    setError,
+    setToken,
+  ]);
 
   useEffect(() => {
     const abortController = new AbortController();
@@ -53,10 +102,10 @@ const OtpInput: React.FC<Props> = (props) => {
     return () => {
       abortController.abort();
     };
-  }, [setOtpCode, handleOtpSubmit, throttledToast]);
+  }, [handleOtpSubmit, setOtpCode, throttledToast]);
 
   const validateAndSubmitOtpCode = async () => {
-    setError("");
+    setError(null);
     setLoading(true);
 
     try {
@@ -88,7 +137,7 @@ const OtpInput: React.FC<Props> = (props) => {
         onChange={(e) => setOtpCode(e.target.value)}
         onKeyDown={handleKeyDown}
       />
-      {error && (
+      {error && typeof error === "string" && (
         <div className="text-center text-red-500 text-sm mb-3">{error}</div>
       )}
       <button

@@ -1,6 +1,7 @@
 """
 Utility functions and constants.
 """
+
 import configparser
 import os
 import subprocess
@@ -9,24 +10,29 @@ from enum import StrEnum
 
 from .logger import logger
 
+FLASK_ENV = os.environ.get("FLASK_ENV", "production")
+
 
 # Environment variables
 def get_secret(secret_name: str) -> str | None:
     """
     Get a Docker Swarm secret.
     """
+    print(FLASK_ENV)
+
+    if FLASK_ENV == "development--non-docker":
+        import dotenv
+
+        dotenv.load_dotenv()
+
+        return os.getenv(secret_name.upper())
+
     try:
         with open(f"/run/secrets/{secret_name}", "r") as secret_file:
             return secret_file.read().strip()
     except IOError:
         return None
 
-
-SECRET_KEY = get_secret("secret_key") or "SECRET_KEY"
-FLASK_ENV = get_secret("flask_env") or "production"
-
-if SECRET_KEY == "SECRET_KEY":
-    raise ValueError("SECRET_KEY environment variable not set or non-unique")
 
 TWILIO_PHONE_NUMBER = get_secret("twilio_phone_number")
 TWILIO_AUTH_TOKEN = get_secret("twilio_auth_token")
@@ -80,7 +86,7 @@ IMAGES_PATH = os.path.join(STATIC_PATH, "images")
 
 SONGS_PATH = os.path.join(STATIC_PATH, "songs")
 
-DEFAULT_SONG_PATH = os.path.join(SONGS_PATH, "seven-nation-army.wav")
+DEFAULT_SONG_PATH = os.path.join(SONGS_PATH, "midnight-city.wav")
 DEFAULT_SHORT_SONG_PATH = os.path.join(SONGS_PATH, "midnight-city-short.wav")
 
 ENDCARD_TEMPLATE_IMAGE_PATH = os.path.join(IMAGES_PATH, "endCard_template.jpg")
@@ -102,7 +108,7 @@ HOST: str | None = get_secret("host") or "localhost"
 PORT: str | None = get_secret("port") or "5000"
 PORT = int(PORT) if PORT is not None else None
 
-TRUE_HOST = f"http://{HOST}:{PORT}" if FLASK_ENV == "development" else "https://api.bereal.michaeldemar.co"
+TRUE_HOST = "https://api.bereal.michaeldemar.co" if FLASK_ENV == "production" else f"http://localhost:{PORT}"
 
 REDIS_HOST: str | None = get_secret("redis_host") or "redis"
 REDIS_PORT: str | None = get_secret("redis_port") or "6379"

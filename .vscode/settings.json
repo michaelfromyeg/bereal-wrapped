@@ -10,14 +10,14 @@
     "*.mako": "python",
     "*.conf": "ini",
     "*.rdb": "sql",
-    "*.local": "plaintext"
+    "*.local": "plaintext",
+    "log.log*": "plaintext"
   },
   "files.insertFinalNewline": true,
   "editor.formatOnSave": true,
   "editor.codeActionsOnSave": {
     "source.fixAll": "explicit",
-    // TODO(michaelfromyeg): make this happen for everything except CSS
-    "source.organizeImports": "never"
+    "source.organizeImports": "explicit"
   },
   "python.terminal.activateEnvironment": true,
   "python.terminal.activateEnvInCurrentTerminal": true,

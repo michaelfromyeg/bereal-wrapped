@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import Select, { StylesConfig } from "react-select";
 import { getCountries, getCountryCallingCode } from "libphonenumber-js";
+import { useFormContext } from "../context/FormContext";
 
 const countries = getCountries();
 
@@ -59,12 +60,8 @@ export const customStyles: StylesConfig<CountryOption, false> = {
   }),
 };
 
-interface Props {
-  setCountryCode: Function;
-}
-
-const CountryCodeSelect: React.FC<Props> = (props: Props) => {
-  const { setCountryCode } = props;
+const CountryCodeSelect: React.FC = () => {
+  const { setCountryCode } = useFormContext();
 
   const [selectedOption, setSelectedOption] = useState<CountryOption | null>(
     null

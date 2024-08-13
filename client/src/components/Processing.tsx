@@ -1,25 +1,23 @@
-import React, { useState, useEffect } from "react";
 import axios from "axios";
+import React, { useEffect, useState } from "react";
 
+import { useNavigate } from "react-router-dom";
+import { useFormContext } from "../context/FormContext";
+import { useError } from "../hooks/useError";
 import { BASE_URL } from "../utils/constants";
 
-interface Props {
-  phone: string;
-  berealToken: string;
+interface Props {}
 
-  taskId: string;
-  setResult: Function;
-  setError: Function;
-  setStage: Function;
-}
-
-const VideoProcessor: React.FC<Props> = (props: Props) => {
-  const { phone, berealToken, taskId, setResult, setError, setStage } = props;
-
-  const [errorCount, setErrorCount] = useState<number>(0);
+const VideoProcessor: React.FC<Props> = () => {
+  const { countryCode, phoneNumber, berealToken, taskId, setVideoFilename } =
+    useFormContext();
+  const navigate = useNavigate();
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [progress, setProgress] = useState<number>(0);
+
+  const { setError } = useError("Failed to generate video. Try again later.");
+  const [errorCount, setErrorCount] = useState<number>(0);
 
   useEffect(() => {
     const checkProgress = async () => {
@@ -27,14 +25,14 @@ const VideoProcessor: React.FC<Props> = (props: Props) => {
         try {
           const response = await axios.get(`${BASE_URL}/status/${taskId}`, {
             params: {
-              phone,
+              phone: `${countryCode}${phoneNumber}`,
               berealToken,
             },
           });
 
           if (response.status === 401) {
             setError("Please refresh the page and try again.");
-            setStage("phoneInput");
+            navigate("/");
             return;
           }
 
@@ -46,7 +44,7 @@ const VideoProcessor: React.FC<Props> = (props: Props) => {
 
             if (errorCount >= 5) {
               setError("Failed to generate video. Try again later.");
-              setStage("phoneInput");
+              navigate("/");
             }
 
             return;
@@ -56,13 +54,13 @@ const VideoProcessor: React.FC<Props> = (props: Props) => {
 
           if (status === "FAILURE") {
             setError("Failed to generate video. Try again later.");
-            setStage("phoneInput");
+            navigate("/");
           }
           if (status === "SUCCESS") {
             setProgress(100);
 
-            setResult(result);
-            setStage("videoDisplay");
+            setVideoFilename(result);
+            navigate("/download");
           } else {
             setProgress(logProgress(response.data));
           }
@@ -86,14 +84,15 @@ const VideoProcessor: React.FC<Props> = (props: Props) => {
       }
     };
   }, [
-    phone,
+    phoneNumber,
     berealToken,
     taskId,
-    setResult,
     setError,
-    setStage,
     errorCount,
     setErrorCount,
+    countryCode,
+    navigate,
+    setVideoFilename,
   ]);
 
   return (

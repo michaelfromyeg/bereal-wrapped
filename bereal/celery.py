@@ -24,7 +24,9 @@ bcelery = make_celery()
 
 
 @bcelery.task(time_limit=1200)
-def make_video(token: str, bereal_token: str, phone: str, year: str, song_path: str, mode: Mode) -> str:
+def make_video(
+    token: str, bereal_token: str, phone: str, year: str, display_date: bool, song_path: str, mode: Mode
+) -> str:
     """
     Creating a video takes about ~15 min. This is a work-in-progress!
 
@@ -43,7 +45,7 @@ def make_video(token: str, bereal_token: str, phone: str, year: str, song_path: 
 
     logger.info("Creating images for %s...", video_file)
     try:
-        image_folder = create_images(phone, year)
+        image_folder = create_images(phone, year, display_date)
     except Exception as e:
         logger.error("Failed to create images: %s", e)
         gc.collect()

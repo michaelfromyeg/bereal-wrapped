@@ -1,21 +1,33 @@
+import axios from "axios";
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { useFormContext } from "../context/FormContext";
+import { SomeError, useError } from "../hooks/useError";
+import { BASE_URL } from "../utils/constants";
 import CountryCode from "./CountryCode";
 
-interface Props {
-  setCountryCode: React.Dispatch<React.SetStateAction<string>>;
-  setPhoneNumber: React.Dispatch<React.SetStateAction<string>>;
-  handlePhoneSubmit: (input: string) => void;
+interface OtpResponse {
+  otpSession: string;
 }
 
-const PhoneInput: React.FC<Props> = (props) => {
-  const { setCountryCode, handlePhoneSubmit } = props;
+interface ErrorResponse {
+  message: string;
+}
+
+interface Props {}
+
+const PhoneInput: React.FC<Props> = () => {
+  const { setPhoneNumber, countryCode, setOtpSession } = useFormContext();
+  const navigate = useNavigate();
 
   const [loading, setLoading] = useState<boolean>(false);
-  const [error, setError] = useState<string>("");
+  const { error, setError } = useError(
+    "Couldn't send the verification code. Please try again."
+  );
 
   const [input, setInput] = useState<string>("");
 
-  const handleKeyDown = (event: any) => {
+  const handleKeyDown = (event: any): void => {
     if (event.key === "Enter") {
       event.preventDefault();
 
@@ -23,8 +35,26 @@ const PhoneInput: React.FC<Props> = (props) => {
     }
   };
 
-  const validateAndSubmitPhoneNumber = async () => {
-    setError("");
+  const handlePhoneSubmit = async (input: string): Promise<void> => {
+    try {
+      setPhoneNumber(input);
+
+      const response = await axios.post<OtpResponse>(
+        `${BASE_URL}/request-otp`,
+        {
+          phone: `${countryCode}${input}`,
+        }
+      );
+
+      setOtpSession(response.data.otpSession);
+      navigate("otp");
+    } catch (error) {
+      setError(error as SomeError);
+    }
+  };
+
+  const validateAndSubmitPhoneNumber = async (): Promise<void> => {
+    setError(null);
     setLoading(true);
 
     const phoneNumber = input.replace(/[- ]/g, "");
@@ -50,7 +80,7 @@ const PhoneInput: React.FC<Props> = (props) => {
         Requires your phone number. Videos are deleted after 24-hours and only
         accessible by you. No other data is stored by this service.
       </p>
-      <CountryCode setCountryCode={setCountryCode} />
+      <CountryCode />
       <label htmlFor="phoneNumber" className="block mb-2 text-sm">
         Phone Number*
       </label>
@@ -64,7 +94,7 @@ const PhoneInput: React.FC<Props> = (props) => {
         onChange={(e) => setInput(e.target.value)}
         onKeyDown={handleKeyDown}
       />
-      {error && (
+      {error && typeof error === "string" && (
         <div className="text-center text-red-500 text-sm mb-3">{error}</div>
       )}
       <button

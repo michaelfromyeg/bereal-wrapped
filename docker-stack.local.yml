@@ -1,5 +1,3 @@
-version: "3.8"
-
 services:
   web:
     image: michaelfromyeg/bereal_wrapped
@@ -11,9 +9,8 @@ services:
       - "5000:5000"
     environment:
       - FLASK_APP=bereal.server
+      - FLASK_ENV=development
     secrets:
-      - flask_env
-      - secret_key
       - host
       - port
       - redis_host
@@ -22,19 +19,21 @@ services:
       - twilio_auth_token
       - twilio_account_sid
     deploy:
+      resources:
+        limits:
+          memory: 500M
       replicas: 1
 
   celery:
+    command: celery
     image: michaelfromyeg/bereal_wrapped
     volumes:
       - exports:/app/exports
       - content:/app/content
-    command: celery
     environment:
       - FLASK_APP=bereal.server
+      - FLASK_ENV=development
     secrets:
-      - flask_env
-      - secret_key
       - host
       - port
       - redis_host
@@ -43,21 +42,23 @@ services:
       - twilio_auth_token
       - twilio_account_sid
     deploy:
+      resources:
+        limits:
+          memory: 3G
       replicas: 1
 
   flower:
     image: michaelfromyeg/bereal_wrapped
+    command: flower
     volumes:
       - exports:/app/exports
       - content:/app/content
     ports:
       - "5555:5555"
-    command: flower
     environment:
       - FLASK_APP=bereal.server
+      - FLASK_ENV=development
     secrets:
-      - flask_env
-      - secret_key
       - host
       - port
       - redis_host
@@ -86,10 +87,6 @@ configs:
     file: ./redis/redis.conf
 
 secrets:
-  flask_env:
-    external: true
-  secret_key:
-    external: true
   host:
     external: true
   port:

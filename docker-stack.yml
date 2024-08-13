@@ -3,6 +3,7 @@ version: "3.8"
 services:
   web:
     image: michaelfromyeg/bereal_wrapped:latest
+    command: web
     volumes:
       - /mnt/videos:/app/exports
       - /mnt/content:/app/content
@@ -10,9 +11,8 @@ services:
       - "5000:5000"
     environment:
       - FLASK_APP=bereal.server
+      - FLASK_ENV=production
     secrets:
-      - flask_env
-      - secret_key
       - host
       - port
       - redis_host
@@ -28,15 +28,14 @@ services:
 
   celery:
     image: michaelfromyeg/bereal_wrapped:latest
+    command: celery
     volumes:
       - /mnt/videos:/app/exports
       - /mnt/content:/app/content
-    command: celery -A bereal.celery worker --loglevel=INFO --logfile=celery.log -E -c 1
     environment:
       - FLASK_APP=bereal.server
+      - FLASK_ENV=production
     secrets:
-      - flask_env
-      - secret_key
       - host
       - port
       - redis_host
@@ -80,10 +79,6 @@ configs:
     file: ./redis/redis.conf
 
 secrets:
-  flask_env:
-    external: true
-  secret_key:
-    external: true
   host:
     external: true
   port:

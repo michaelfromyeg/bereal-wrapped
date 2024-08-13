@@ -1,28 +1,102 @@
 import { useState } from "react";
 import Select from "react-select";
 
+import axios from "axios";
+import { useNavigate } from "react-router-dom";
+import { useFormContext } from "../context/FormContext";
+import { SomeError, useError } from "../hooks/useError";
+import { useThrottledToast } from "../hooks/useThrottledToast";
+import { BASE_URL, MAX_FILE_SIZE, MODES, YEARS } from "../utils/constants";
 import { customStyles } from "./CountryCode";
-import { Option, YEARS, MODES, MAX_FILE_SIZE } from "../utils/constants";
 
-interface Props {
-  setYear: React.Dispatch<React.SetStateAction<Option | null>>;
-  setMode: React.Dispatch<React.SetStateAction<Option | null>>;
-  setFile: React.Dispatch<React.SetStateAction<File | null>>;
-  handleSettingsSubmit: () => void;
-  year: Option | null;
-  mode: Option | null;
-  file: File | null;
+interface VideoResponse {
+  taskId: string;
 }
 
-const Settings: React.FC<Props> = (props) => {
-  const { setYear, setMode, setFile, handleSettingsSubmit, year, mode, file } =
-    props;
+interface ErrorResponse {
+  message: string;
+}
+
+interface Props {}
+
+const Settings: React.FC<Props> = () => {
+  const {
+    countryCode,
+    phoneNumber,
+    berealToken,
+    token,
+    setYear,
+    setDisplayDate,
+    setMode,
+    setFile,
+    setDisableMusic,
+    year,
+    displayDate,
+    mode,
+    file,
+    disableMusic,
+    setTaskId,
+  } = useFormContext();
+  const navigate = useNavigate();
+  const throttledToast = useThrottledToast();
 
   const [loading, setLoading] = useState<boolean>(false);
-  const [error, setError] = useState<any | null>(null);
+  const { error, setError } = useError(
+    "An unexpected error occurred in creating your video. Please refresh the page and try again."
+  );
+
+  // assumes year and mode are set
+  const handleSettingsSubmit = async (): Promise<void> => {
+    const formData = new FormData();
+
+    if (!year || !mode) {
+      return;
+    }
+
+    formData.append("token", token);
+    formData.append("year", year.value);
+    formData.append("displayDate", displayDate ? "true" : "false");
+    formData.append("mode", mode.value);
+
+    // if left blank, a default song is used
+    if (file) {
+      formData.append("file", file);
+    }
+
+    formData.append("disableMusic", disableMusic ? "true" : "false");
+
+    try {
+      const response = await axios.post<VideoResponse>(
+        `${BASE_URL}/video`,
+        formData,
+        {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+          params: {
+            phone: `${countryCode}${phoneNumber}`,
+            berealToken,
+          },
+        }
+      );
+
+      if (response.status === 401) {
+        setError(
+          "An unexpected error occurred in creating your video. Please refresh the page and try again."
+        );
+        navigate("/");
+        return;
+      }
+
+      setTaskId(response.data.taskId);
+      navigate("processing");
+    } catch (error) {
+      setError(error as SomeError);
+    }
+  };
 
   const validateAndSubmitSettings = async () => {
-    setError("");
+    setError(null);
     setLoading(true);
 
     try {
@@ -56,17 +130,6 @@ const Settings: React.FC<Props> = (props) => {
         styles={customStyles}
         className="basic-single mb-3"
       />
-      {/* TODO(michaelfromyeg): this needs some styling work */}
-      <label htmlFor="song" className="block mb-2 text-sm">
-        Song (if blank, there's a default song!)
-      </label>
-      <input
-        className="block w-full p-2 mt-1 mb-3 border border-white rounded-md file:mr-3 file:p-1 file:text-sm file:bg-white file:border-0 cursor-pointer"
-        type="file"
-        id="song"
-        accept=".wav"
-        onChange={(e) => setFile(e.target.files?.[0] ?? null)}
-      />
       <label htmlFor="mode" className="block mb-2 text-sm">
         Mode*
       </label>
@@ -79,7 +142,49 @@ const Settings: React.FC<Props> = (props) => {
         options={MODES}
         styles={customStyles}
       />
-      {error && (
+      <label htmlFor="song" className="block mb-2 text-sm">
+        Custom Song (.wav) (if blank,{" "}
+        <a
+          className="text-link hover:text-link-dark focus:outline-none focus:ring-2 focus:ring-link focus:ring-opacity-50"
+          href="https://youtube.com/watch?v=dX3k_QDnzHE"
+          target="_blank"
+          rel="noreferrer"
+        >
+          Midnight City
+        </a>{" "}
+        by M83 will be used)
+      </label>
+      {/* TODO(michaelfromyeg): the file input needs some styling work */}
+      <input
+        className="block w-full p-2 mt-1 mb-3 border border-white rounded-md file:mr-3 file:p-1 file:text-sm file:bg-white file:border-0 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+        type="file"
+        id="song"
+        accept=".wav"
+        onChange={(e) => setFile(e.target.files?.[0] ?? null)}
+        disabled={disableMusic}
+      />
+      {/* TODO(michaelfromyeg): a checkbox to enable displaying dates */}
+      <div className="flex items-center justify-center mb-3">
+        <label htmlFor="disableMusic" className="text-sm mr-2">
+          Disable Music
+        </label>
+        <input
+          id="disableMusic"
+          type="checkbox"
+          checked={disableMusic}
+          onChange={(e) => setDisableMusic(e.target.checked)}
+        />
+        <label htmlFor="displayDate" className="text-sm mx-2">
+          Include Date
+        </label>
+        <input
+          id="displayDate"
+          type="checkbox"
+          checked={displayDate}
+          onChange={(e) => setDisplayDate(e.target.checked)}
+        />
+      </div>
+      {error && typeof error === "string" && (
         <div className="text-center text-red-500 text-sm mb-3">{error}</div>
       )}
       <button
