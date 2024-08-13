@@ -47,7 +47,7 @@ const PhoneInput: React.FC<Props> = () => {
       );
 
       setOtpSession(response.data.otpSession);
-      navigate("otp");
+      navigate("/otp");
     } catch (error) {
       setError(error as SomeError);
     }

@@ -89,7 +89,7 @@ const Settings: React.FC<Props> = () => {
       }
 
       setTaskId(response.data.taskId);
-      navigate("processing");
+      navigate("/processing");
     } catch (error) {
       setError(error as SomeError);
     }
@@ -143,7 +143,7 @@ const Settings: React.FC<Props> = () => {
         styles={customStyles}
       />
       <label htmlFor="song" className="block mb-2 text-sm">
-        Custom Song (.wav) (if blank,{" "}
+        Song (.wav) (if blank,{" "}
         <a
           className="text-link hover:text-link-dark focus:outline-none focus:ring-2 focus:ring-link focus:ring-opacity-50"
           href="https://youtube.com/watch?v=dX3k_QDnzHE"
@@ -152,7 +152,7 @@ const Settings: React.FC<Props> = () => {
         >
           Midnight City
         </a>{" "}
-        by M83 will be used)
+        by M83 will be used.)
       </label>
       {/* TODO(michaelfromyeg): the file input needs some styling work */}
       <input

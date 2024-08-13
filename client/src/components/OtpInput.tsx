@@ -57,7 +57,7 @@ const OtpInput: React.FC<Props> = () => {
       setToken(response.data.token);
       setBerealToken(response.data.bereal_token);
 
-      navigate("settings");
+      navigate("/settings");
     } catch (error) {
       setError(error as SomeError);
     }
