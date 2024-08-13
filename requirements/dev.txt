@@ -1,4 +1,5 @@
 mypy
+python-dotenv
 ruff
 types-Pillow
 types-requests

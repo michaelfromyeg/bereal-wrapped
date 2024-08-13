@@ -5,24 +5,21 @@ client:
 	@cd client && npm start
 
 build:
-	@echo "Building the server..."
-	@docker-compose -f docker-compose.local.yml build
+	@echo "Building the server image..."
+	@docker build -t michaelfromyeg/bereal_wrapped -f docker/Dockerfile.server .
+	@docker push michaelfromyeg/bereal_wrapped
 
 up:
 	@echo "Booting up the server..."
-	@docker-compose -f docker-compose.local.yml up -d
+	@docker stack deploy -c docker-stack.local.yml bereal-wrapped
 
 logs:
 	@echo "Showing the server logs..."
-	@docker-compose -f docker-compose.local.yml logs -f
+	@docker service logs -f bereal-wrapped_web
 
 down:
 	@echo "Shutting down the server..."
-	@docker-compose -f docker-compose.local.yml down
-
-kill:
-	@echo "Killing the server..."
-	@docker-compose -f docker-compose.local.yml kill
+	@docker stack rm bereal-wrapped
 
 start-redis:
 	@echo "Booting up Redis..."
@@ -38,14 +35,20 @@ stop-redis:
 
 celery:
 	@echo "Booting up Celery..."
+	@export FLASK_APP=bereal.server
+	@export FLASK_ENV=development--non-docker
 	@celery -A bereal.celery worker --loglevel=DEBUG --logfile=celery.log -E
 
 flower:
 	@echo "Booting up Flower..."
+	@export FLASK_APP=bereal.server
+	@export FLASK_ENV=development--non-docker
 	@celery -A bereal.celery flower --address=0.0.0.0 --inspect --enable-events --loglevel=DEBUG --logfile=flower.log
 
 server:
 	@echo "Booting up the server..."
+	@export FLASK_APP=bereal.server
+	@export FLASK_ENV=development--non-docker
 	@python -m bereal.server
 
 cli:

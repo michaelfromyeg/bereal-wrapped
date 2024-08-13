@@ -17,14 +17,12 @@ def sms(phone: str, link: str) -> None:
     try:
         client = Client(TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN)
 
-        if FLASK_ENV == "development":
-            logger.info("Skipping SMS in development mode")
-            return
-
         message_body = f"Here is the link to your BeReal Wrapped!\n\n{link}"
-        message = client.messages.create(body=message_body, from_=TWILIO_PHONE_NUMBER, to=phone)
-
-        logger.info("Sent message to %s: %s", phone, message.sid)
+        if FLASK_ENV == "development":
+            logger.debug("Skipping SMS in development mode; would send %s", message_body)
+        else:
+            message = client.messages.create(body=message_body, from_=TWILIO_PHONE_NUMBER, to=phone)
+            logger.info("Sent message %s to %s", message.sid, phone)
     except Exception as e:
         logger.error("Failed to send SMS: %s", e)
         pass

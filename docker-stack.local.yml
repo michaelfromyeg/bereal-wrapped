@@ -1,0 +1,103 @@
+services:
+  web:
+    image: michaelfromyeg/bereal_wrapped
+    volumes:
+      - exports:/app/exports
+      - content:/app/content
+    command: web
+    ports:
+      - "5000:5000"
+    environment:
+      - FLASK_APP=bereal.server
+      - FLASK_ENV=development
+    secrets:
+      - host
+      - port
+      - redis_host
+      - redis_port
+      - twilio_phone_number
+      - twilio_auth_token
+      - twilio_account_sid
+    deploy:
+      resources:
+        limits:
+          memory: 500M
+      replicas: 1
+
+  celery:
+    command: celery
+    image: michaelfromyeg/bereal_wrapped
+    volumes:
+      - exports:/app/exports
+      - content:/app/content
+    environment:
+      - FLASK_APP=bereal.server
+      - FLASK_ENV=development
+    secrets:
+      - host
+      - port
+      - redis_host
+      - redis_port
+      - twilio_phone_number
+      - twilio_auth_token
+      - twilio_account_sid
+    deploy:
+      resources:
+        limits:
+          memory: 3G
+      replicas: 1
+
+  flower:
+    image: michaelfromyeg/bereal_wrapped
+    command: flower
+    volumes:
+      - exports:/app/exports
+      - content:/app/content
+    ports:
+      - "5555:5555"
+    environment:
+      - FLASK_APP=bereal.server
+      - FLASK_ENV=development
+    secrets:
+      - host
+      - port
+      - redis_host
+      - redis_port
+      - twilio_phone_number
+      - twilio_auth_token
+      - twilio_account_sid
+    deploy:
+      replicas: 1
+
+  redis:
+    image: "redis:alpine"
+    configs:
+      - source: redis_conf
+        target: /usr/local/etc/redis/redis.conf
+    command: redis-server /usr/local/etc/redis/redis.conf
+    deploy:
+      replicas: 1
+
+volumes:
+  exports:
+  content:
+
+configs:
+  redis_conf:
+    file: ./redis/redis.conf
+
+secrets:
+  host:
+    external: true
+  port:
+    external: true
+  redis_host:
+    external: true
+  redis_port:
+    external: true
+  twilio_phone_number:
+    external: true
+  twilio_auth_token:
+    external: true
+  twilio_account_sid:
+    external: true

@@ -5,6 +5,7 @@
 
 *.db
 *.rdb
+*.log*
 
 content/**/**
 !content/.gitkeep

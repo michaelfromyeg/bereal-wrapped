@@ -21,7 +21,6 @@ from flask_limiter import Limiter  # noqa: E402
 from flask_limiter.util import get_remote_address  # noqa: E402
 from flask_migrate import Migrate  # noqa: E402
 from flask_sqlalchemy import SQLAlchemy  # noqa: E402
-from itsdangerous import URLSafeTimedSerializer  # noqa: E402
 
 from .bereal import send_code, verify_code  # noqa: E402
 from .celery import bcelery, make_video  # noqa: E402
@@ -37,7 +36,6 @@ from .utils import (  # noqa: E402
     PORT,
     REDIS_HOST,
     REDIS_PORT,
-    SECRET_KEY,
     Mode,
     str2mode,
 )
@@ -56,11 +54,9 @@ limiter = Limiter(
     default_limits=["500 per day", "200 per hour", "20 per minute", "5 per second"],
 )
 
-serializer = URLSafeTimedSerializer(SECRET_KEY)
-
 logger.info("Running in %s mode", FLASK_ENV)
 
-if FLASK_ENV == "development":
+if FLASK_ENV != "production":
     logger.info("Enabling CORS for development")
     CORS(app)
 else:
@@ -152,7 +148,7 @@ def validate_otp() -> tuple[Response, int]:
         return jsonify({"error": "Bad Request", "message": "Invalid verification code"}), 400
 
     # generate a custom app token; this we can safely save in our DB
-    bereal_token = secrets.token_urlsafe(20)
+    bereal_token = secrets.token_hex(10)
 
     insert_bereal_token(phone, bereal_token)
 
@@ -172,31 +168,42 @@ def create_video() -> tuple[Response, int]:
 
     token = request.form["token"]
     year = request.form["year"]
+    display_date = True if request.form["displayDate"] == "true" else False
     wav_file = request.files.get("file", None)
     mode_str = request.form.get("mode")
 
     mode = str2mode(mode_str)
 
+    # TODO(michaelfromyeg): as a temporary hack, validate phone and year to not get weird paths
+    if not phone.isnumeric() or len(phone) > 20:
+        return jsonify({"error": "Bad Request", "message": "Invalid phone number"}), 400
+    if not year.isnumeric() or len(year) > 4:
+        return jsonify({"error": "Bad Request", "message": "Invalid year"}), 400
+
     song_folder = os.path.join(CONTENT_PATH, phone, year)
     os.makedirs(song_folder, exist_ok=True)
 
     song_path = os.path.join(song_folder, "song.wav")
+    disable_music = True if request.form["disableMusic"] == "true" else False
 
-    if wav_file:
+    if not disable_music and wav_file:
         logger.info("Downloading music file %s...", wav_file.filename)
         try:
             wav_file.save(song_path)
-        except Exception as error:
-            logger.warning("Could not save music file, received: %s", error)
+        except Exception as exception:
+            logger.warning("Could not save music file, received: %s", exception)
             song_path = DEFAULT_SHORT_SONG_PATH if mode == Mode.CLASSIC else DEFAULT_SONG_PATH
-    else:
+    elif not disable_music:
         logger.info("No music file provided; using default...")
         song_path = DEFAULT_SHORT_SONG_PATH if mode == Mode.CLASSIC else DEFAULT_SONG_PATH
+    else:
+        logger.info("Music disabled; setting path to empty string")
+        song_path = ""
 
     logger.info("Queueing video task...")
 
     # TODO(michaelfromyeg): replace token with bereal_token
-    task = make_video.delay(token, bereal_token, phone, year, song_path, mode)
+    task = make_video.delay(token, bereal_token, phone, year, display_date, song_path, mode)
 
     return jsonify({"taskId": task.id}), 202
 
@@ -318,8 +325,11 @@ def delete_expired_tokens() -> None:
     """
     Delete all expired tokens from the database.
     """
-    expiration_time = datetime.utcnow() - timedelta(hours=24)
-    BerealToken.query.filter(BerealToken.timestamp < expiration_time).delete()
+    expiration_time = datetime.utcnow() - timedelta(days=1)
+
+    n = BerealToken.query.filter(BerealToken.timestamp < expiration_time).delete()
+    logger.info("Deleted %d expired tokens", n)
+
     db.session.commit()
 
     return None
@@ -329,7 +339,7 @@ def delete_old_videos() -> None:
     """
     Delete videos that are more than a day old.
     """
-    time_limit = datetime.now() - timedelta(days=1)
+    expiration_time = datetime.utcnow() - timedelta(days=1)
 
     for filename in os.listdir(EXPORTS_PATH):
         file_path = os.path.join(EXPORTS_PATH, filename)
@@ -337,7 +347,7 @@ def delete_old_videos() -> None:
         if os.path.isfile(file_path):
             file_mod_time = datetime.fromtimestamp(os.path.getmtime(file_path))
 
-            if file_mod_time < time_limit:
+            if file_mod_time < expiration_time:
                 try:
                     os.remove(file_path)
                     logger.info("Deleted video file %s", file_path)
@@ -368,4 +378,4 @@ def scheduled_video_task() -> None:
 if __name__ == "__main__":
     logger.info("Starting BeReal server on %s:%d...", HOST, PORT)
 
-    app.run(host=HOST, port=PORT, debug=FLASK_ENV == "development")
+    app.run(host=HOST, port=PORT, debug=FLASK_ENV != "production")
