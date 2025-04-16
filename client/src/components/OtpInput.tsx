@@ -1,21 +1,38 @@
-import { useEffect, useState } from "react";
-import { useThrottledToast } from "../hooks/useThrottledToast";
+import { useCallback, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { useFormContext } from "../context/FormContext";
+import { SomeError, useError } from "../hooks/useError";
+import { useMobileOtpAutofill } from "../hooks/useMobileOtpAutofill";
+import axios from "../utils/axios";
+import { BASE_URL } from "../utils/constants";
 
-interface Props {
-  otpCode: string;
-  setOtpCode: React.Dispatch<React.SetStateAction<string>>;
-  handleOtpSubmit: () => void;
+interface ValidateOtpResponse {
+  token: string;
+  bereal_token: string;
 }
 
-const OtpInput: React.FC<Props> = (props) => {
-  const { otpCode, setOtpCode, handleOtpSubmit } = props;
+interface ErrorResponse {
+  message: string;
+}
+
+const OtpInput: React.FC = () => {
+  const {
+    phoneNumber,
+    countryCode,
+    otpSession,
+    otpCode,
+    setOtpCode,
+    setToken,
+    setBerealToken,
+  } = useFormContext();
+  const navigate = useNavigate();
 
   const [loading, setLoading] = useState<boolean>(false);
-  const [error, setError] = useState<string>("");
+  const { error, setError } = useError<ErrorResponse>(
+    "Couldn't validate your verification code. Please try again."
+  );
 
-  const throttledToast = useThrottledToast();
-
-  const handleKeyDown = (event: any) => {
+  const handleKeyDown = (event: any): void => {
     if (event.key === "Enter") {
       event.preventDefault();
 
@@ -23,40 +40,37 @@ const OtpInput: React.FC<Props> = (props) => {
     }
   };
 
-  useEffect(() => {
-    const abortController = new AbortController();
-
-    const fetchOtp = async () => {
-      if ("OTPCredential" in window) {
-        try {
-          const content = await navigator.credentials.get({
-            otp: { transport: ["sms"] },
-            signal: abortController.signal,
-          });
-
-          if (!content) return;
-
-          setOtpCode(content.code);
-          handleOtpSubmit();
-        } catch (error) {
-          console.warn(error);
-          throttledToast(
-            "Couldn't paste your verification code automatically. Enter it manually.",
-            "warning"
-          );
+  const handleOtpSubmit = useCallback(async (): Promise<void> => {
+    try {
+      const response = await axios.post<ValidateOtpResponse>(
+        `${BASE_URL}/validate-otp`,
+        {
+          otp_session: otpSession,
+          otp_code: otpCode,
+          phone: `${countryCode}${phoneNumber}`,
         }
-      }
-    };
+      );
 
-    fetchOtp();
+      setToken(response.data.token);
+      setBerealToken(response.data.bereal_token);
 
-    return () => {
-      abortController.abort();
-    };
-  }, [setOtpCode, handleOtpSubmit, throttledToast]);
+      navigate("/settings");
+    } catch (error) {
+      setError(error as SomeError);
+    }
+  }, [
+    countryCode,
+    navigate,
+    otpCode,
+    otpSession,
+    phoneNumber,
+    setBerealToken,
+    setError,
+    setToken,
+  ]);
 
   const validateAndSubmitOtpCode = async () => {
-    setError("");
+    setError(null);
     setLoading(true);
 
     try {
@@ -73,6 +87,8 @@ const OtpInput: React.FC<Props> = (props) => {
     }
   };
 
+  useMobileOtpAutofill(setOtpCode, handleOtpSubmit);
+
   return (
     <div className="w-full">
       <label htmlFor="otpCode" className="block mb-2 text-sm">
@@ -88,7 +104,7 @@ const OtpInput: React.FC<Props> = (props) => {
         onChange={(e) => setOtpCode(e.target.value)}
         onKeyDown={handleKeyDown}
       />
-      {error && (
+      {error && typeof error === "string" && (
         <div className="text-center text-red-500 text-sm mb-3">{error}</div>
       )}
       <button

@@ -3,10 +3,12 @@ services:
     build:
       context: .
       dockerfile: docker/Dockerfile.server
+    image: bereal_web
     volumes:
       - ./exports:/app/exports
       - ./content:/app/content
     user: thekid
+    command: web
     ports:
       - "5000:5000"
     environment:
@@ -15,14 +17,12 @@ services:
       - redis
 
   celery:
-    build:
-      context: .
-      dockerfile: docker/Dockerfile.celery
+    image: bereal_web
     volumes:
       - ./exports:/app/exports
       - ./content:/app/content
     user: thekid
-    command: celery -A bereal.celery worker --loglevel=INFO --logfile=celery.log -E
+    command: celery
     environment:
       - FLASK_APP=bereal.server
     depends_on:
@@ -30,15 +30,13 @@ services:
       - redis
 
   flower:
-    build:
-      context: .
-      dockerfile: docker/Dockerfile.flower
+    image: bereal_web
     volumes:
       - ./exports:/app/exports
     user: thekid
     ports:
       - "5555:5555"
-    command: celery -A bereal.celery flower --address=0.0.0.0 --inspect --enable-events --loglevel=DEBUG --logfile=flower.log
+    command: flower
     environment:
       - FLASK_APP=bereal.server
     depends_on:

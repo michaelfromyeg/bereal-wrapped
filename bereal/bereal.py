@@ -4,14 +4,12 @@ Methods to interface with the unofficial BeReal API.
 
 import os
 from datetime import datetime
-from typing import Any
+from typing import Any, Literal, TypedDict
 
 import requests as r
 
 from .logger import logger
 from .utils import BASE_URL, CONTENT_PATH, TIMEOUT, str2datetime
-
-from typing import TypedDict, Literal
 
 
 class MediaInfo(TypedDict):
@@ -139,8 +137,14 @@ def memories(phone: str, year: str, token: str, sdate: datetime, edate: datetime
             logger.debug("Invalid date: %s", date_str)
             return None
 
-        # Extracting the image name from the URL
-        image_name = date_str + "_" + url.split("/")[-1]
+        # Extracting the image name from the URL; will be the last "thing" in this/that/other.xyz
+        image_path = url.split("/")[-1]
+
+        # if image_path.lower().endswith(".webp"):
+        #     logger.warning("Skipping webp image: %s, currently not supported", image_path)
+        #     return None
+
+        image_name = date_str + "_" + image_path
 
         with open(os.path.join(base_path, image_name), "wb") as img_file:
             img_response = r.get(url, timeout=10)

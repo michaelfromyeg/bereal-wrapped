@@ -5,9 +5,6 @@ export type ReducedTypeOptions = "info" | "success" | "warning" | "error";
 
 /**
  * Don't spam the user with error messages. This is why they should also be console logged.
- *
- * @param limit
- * @returns {function(string, string, ToastOptions): void}
  */
 export const useThrottledToast = (limit: number = 3000) => {
   const lastToastRef = useRef<number>(0);

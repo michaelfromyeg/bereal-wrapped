@@ -1,78 +1,111 @@
-import React, { useState, useEffect } from "react";
-import axios from "axios";
+import React, { useEffect, useState } from "react";
 
+import { useNavigate } from "react-router-dom";
+import { useFormContext } from "../context/FormContext";
+import { useError } from "../hooks/useError";
+import axios from "../utils/axios";
 import { BASE_URL } from "../utils/constants";
 
-interface Props {
-  phone: string;
-  berealToken: string;
-
-  taskId: string;
-  setResult: Function;
-  setError: Function;
-  setStage: Function;
+interface ProgressResponse {
+  status: string;
+  result: string;
 }
 
-const VideoProcessor: React.FC<Props> = (props: Props) => {
-  const { phone, berealToken, taskId, setResult, setError, setStage } = props;
+interface ErrorResponse {
+  message: string;
+}
 
-  const [errorCount, setErrorCount] = useState<number>(0);
+const VideoProcessor: React.FC = () => {
+  const {
+    countryCode,
+    phoneNumber,
+    berealToken,
+    taskId,
+    setVideoFilename,
+    reset,
+  } = useFormContext();
+  const navigate = useNavigate();
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [progress, setProgress] = useState<number>(0);
 
+  const { setError, setErrorAndNavigate } = useError<ErrorResponse>(
+    "Failed to generate video. Try again later."
+  );
+  const [errorCount, setErrorCount] = useState<number>(0);
+
   useEffect(() => {
     const checkProgress = async () => {
-      if (taskId) {
-        try {
-          const response = await axios.get(`${BASE_URL}/status/${taskId}`, {
-            params: {
-              phone,
-              berealToken,
-            },
-          });
+      if (!taskId) {
+        navigate("/");
+        return;
+      }
 
-          if (response.status === 401) {
-            setError("Please refresh the page and try again.");
-            setStage("phoneInput");
-          } else if (response.status > 299) {
-            console.warn("Couldn't check progress:", response);
-            console.log("Progress unknown... continuing anyway!");
+      try {
+        const config = {
+          params: {
+            phone: `${countryCode}${phoneNumber}`,
+            berealToken,
+          },
+        };
+        const response = await axios.get<ProgressResponse>(
+          `${BASE_URL}/status/${taskId}`,
+          config
+        );
 
-            setErrorCount(errorCount + 1);
-
-            if (errorCount >= 5) {
-              setError("Failed to generate video. Try again later.");
-              setStage("phoneInput");
-            }
-          } else {
-            const { status, result } = response.data;
-
-            if (status === "FAILURE") {
-              setError("Failed to generate video. Try again later.");
-              setStage("phoneInput");
-            }
-            if (status === "SUCCESS") {
-              setProgress(100);
-
-              setResult(result);
-              setStage("videoDisplay");
-            } else {
-              setProgress(logProgress(response.data));
-            }
-          }
-        } catch (error) {
-          // again, not something the user needs to know about; just try again
-          console.error("Error checking progress:", error);
+        if (response.status === 401) {
+          reset();
+          setErrorAndNavigate("Please refresh the page and try again.", "/");
+          return;
         }
+
+        if (response.status > 299) {
+          console.warn("Couldn't check progress:", response);
+
+          const nextErrorCount = errorCount + 1;
+          setErrorCount(nextErrorCount);
+
+          if (nextErrorCount >= 3) {
+            reset();
+            setErrorAndNavigate(
+              "Failed to generate video. Try again later.",
+              "/"
+            );
+          }
+
+          return;
+        }
+
+        const { status, result } = response.data;
+        if (status === "FAILURE") {
+          reset();
+          setErrorAndNavigate(
+            "Failed to generate video. Try again later.",
+            "/"
+          );
+        } else if (status === "SUCCESS") {
+          setProgress(100);
+
+          setVideoFilename(result);
+          navigate("/download");
+        } else {
+          setProgress(logProgress(response.data));
+        }
+      } catch (error) {
+        // again, not something the user needs to know about; just try again
+        console.error("Error checking progress:", error);
       }
     };
 
     let interval: NodeJS.Timeout | null = null;
     if (taskId) {
+      checkProgress();
+
       interval = setInterval(() => {
         checkProgress();
       }, 60 * 1000);
+    } else {
+      navigate("/");
     }
 
     return () => {
@@ -81,14 +114,17 @@ const VideoProcessor: React.FC<Props> = (props: Props) => {
       }
     };
   }, [
-    phone,
+    phoneNumber,
     berealToken,
     taskId,
-    setResult,
     setError,
-    setStage,
     errorCount,
     setErrorCount,
+    countryCode,
+    navigate,
+    setVideoFilename,
+    reset,
+    setErrorAndNavigate,
   ]);
 
   return (

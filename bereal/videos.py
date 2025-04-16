@@ -5,16 +5,15 @@ This script generates a slideshow from a folder of images and a music file.
 import os
 
 import librosa
-
 from moviepy.audio.io.AudioFileClip import AudioFileClip
 from moviepy.video.fx import all as vfx
 from moviepy.video.io.ImageSequenceClip import ImageSequenceClip
-
 from PIL import Image, ImageDraw, ImageFont
 
 from .logger import logger
 from .utils import (
     CONTENT_PATH,
+    DEFAULT_SONG_PATH,
     ENDCARD_TEMPLATE_IMAGE_PATH,
     EXPORTS_PATH,
     FONT_BASE_PATH,
@@ -69,13 +68,13 @@ def create_slideshow3(
     """
     Create a video slideshow from a target set of images.
     """
-    logger.debug("Creating slideshow for %s, %s", phone, year)
+    logger.info("Creating slideshow for %s, %s", phone, year)
 
     if not os.path.isdir(input_folder):
         raise ValueError("Input folder does not exist!")
 
-    if music_file is not None and not os.path.isfile(music_file):
-        raise ValueError("Music file does not exist!")
+    if music_file is not None and len(music_file) > 0 and not os.path.isfile(music_file):
+        raise ValueError("Music file specfied but does not exist!")
 
     n_images = len(os.listdir(input_folder))
     if n_images == 0:
@@ -104,18 +103,18 @@ def create_slideshow3(
     if mode == Mode.CLASSIC:
         main_clip = main_clip.fx(vfx.accel_decel, new_duration=30)
 
-    music = AudioFileClip(music_file)
+    if music_file is not None and len(music_file) > 0:
+        logger.info("Adding music to slideshow")
+        music = AudioFileClip(music_file)
 
-    if music.duration < main_clip.duration:
-        logger.warning("Music is shorter than final clip; looping music")
+        if music.duration < main_clip.duration:
+            logger.warning("Music is shorter than final clip; looping music")
+            music = music.fx(vfx.loop, duration=main_clip.duration)
+        else:
+            logger.info("Music is longer than final clip; clipping appropriately")
+            music.set_duration(main_clip.duration)
 
-        music = music.fx(vfx.loop, duration=main_clip.duration)
-    else:
-        logger.info("Music is longer than final clip; clipping appropriately")
-
-        music = music.subclip(0, main_clip.duration)
-
-    main_clip = main_clip.set_audio(music)
+        main_clip = main_clip.set_audio(music)
 
     main_clip.write_videofile(output_file, codec="libx264", audio_codec="aac", threads=4, fps=24)
 
@@ -142,6 +141,9 @@ def build_slideshow(
     """
     Create the actual slideshow.
     """
+    if not os.path.isfile(song_path):
+        song_path = DEFAULT_SONG_PATH
+
     audio_file = librosa.load(song_path)
     y, sr = audio_file
     _, beat_frames = librosa.beat.beat_track(y=y, sr=sr)

@@ -19,3 +19,6 @@ indent_size = 2
 
 [*.{toml,yml,yaml,json,ini}]
 indent_size = 2
+
+[site.webmanifest]
+indent_size = 2
